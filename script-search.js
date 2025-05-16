@@ -115,3 +115,45 @@ document.addEventListener('DOMContentLoaded', function() {
     hideResults();
 
 });
+// In script-search.js
+
+// ... (other parts of your script) ...
+
+function displayResults(data, query) {
+    resultsList.innerHTML = ''; // เคลียร์รายการผลลัพธ์เก่า
+
+    if (query) {
+        resultsDisplaySection.style.display = 'block';
+        resultsTitle.textContent = `ผลการค้นหาสำหรับ "${searchQueryInput.value}"`;
+    }
+
+    if (data && data.length > 0) {
+        resultsCount.textContent = `พบ ${data.length} รายการ`;
+        noResultsMessage.style.display = 'none';
+        resultsList.style.display = '';
+
+        data.forEach(company => {
+            const listItem = document.createElement('li');
+            listItem.className = 'result-item';
+
+            // Make the company name the link
+            listItem.innerHTML = `
+                <a href="company-details.html?id=${company.id}" class="company-name-link">
+                    <span class="company-name">${company.name}</span>
+                </a>
+            `;
+            // If you also want to display Tax ID (optional):
+            // listItem.innerHTML += `<p class="company-taxid">เลขผู้เสียภาษี: ${company.taxId}</p>`;
+
+            resultsList.appendChild(listItem);
+        });
+    } else if (query) {
+        resultsCount.textContent = 'พบ 0 รายการ';
+        noResultsMessage.style.display = 'block';
+        resultsList.style.display = 'none';
+    } else {
+        hideResults();
+    }
+}
+
+// ... (rest of your script) ...

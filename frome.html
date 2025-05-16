@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบฟอร์มบันทึกข้อมูลภาษี</title>
+    <style>
+        /* CSS Reset and Basic Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%; /* ทำให้ html และ body สูงเต็ม viewport */
+            font-family: 'Tahoma', 'Sarabun', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        body {
+            display: flex; /* ใช้ flexbox เพื่อจัด container ให้อยู่กลาง (ถ้าต้องการ) หรือยืดเต็ม */
+            flex-direction: column;
+            padding: 10px; /* ลด padding ของ body ลงเล็กน้อย */
+        }
+
+        .container {
+            width: 100%; /* ทำให้ container กว้างเต็มพื้นที่ที่ body อนุญาต */
+            max-width: 100%; /* เอา max-width เดิมออก หรือตั้งให้กว้างมาก */
+            flex-grow: 1; /* ทำให้ container ขยายเต็มความสูงที่เหลือ */
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            padding: 20px; /* ลด padding ของ container ลงเล็กน้อย */
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-y: auto; /* เพิ่ม scrollbar ถ้าเนื้อหาเกิน */
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Form Grid and Group Styling */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="number"],
+        .form-group select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            width: 100%;
+        }
+        .form-group input[type="radio"],
+        .form-group input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        .radio-group label,
+        .checkbox-group label {
+            font-weight: normal;
+            margin-right: 15px;
+        }
+        .branch-options {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .branch-options label {
+            margin-right: 10px;
+            margin-bottom: 0;
+        }
+
+        /* Form Actions Styling */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .form-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .form-actions button[type="submit"] {
+            background-color: #5cb85c;
+            color: white;
+        }
+        .form-actions button[type="submit"]:hover {
+            background-color: #4cae4c;
+        }
+        .form-actions button[type="reset"] {
+            background-color: #f0ad4e;
+            color: white;
+        }
+        .form-actions button[type="reset"]:hover {
+            background-color: #ec971f;
+        }
+        .delete-btn {
+            background-color: #d9534f;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .delete-btn:hover {
+            background-color: #c9302c;
+        }
+
+        /* Data Table Styling */
+        .data-table-container {
+            margin-top: 25px;
+            overflow-x: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.85em;
+        }
+        .data-table th {
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .data-table tbody {
+             display: block;
+             max-height: 400px; /* ปรับค่าตามต้องการ */
+             overflow-y: auto;
+        }
+        .data-table thead, .data-table tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .data-table tr:hover {
+            background-color: #e2e6ea;
+        }
+        .data-table th.actions-column, .data-table td.actions-column {
+            width: 80px; /* กำหนดความกว้างสำหรับคอลัมน์ Actions */
+            text-align: center;
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .data-table th, .data-table td {
+                font-size: 0.8em;
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>แบบฟอร์มบันทึกข้อมูลภาษี</h1>
+
+        <form id="taxDataForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="sequence">ลำดับ (No.):</label>
+                    <input type="number" id="sequence" name="sequence" readonly> </div>
+                <div class="form-group">
+                    <label for="date">วันที่ (Date):</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="documentNumber">เลขที่เอกสาร (Doc No.):</label>
+                    <input type="text" id="documentNumber" name="documentNumber">
+                </div>
+                <div class="form-group">
+                    <label for="companyName">ชื่อบริษัท (Company Name):</label>
+                    <input type="text" id="companyName" name="companyName" required>
+                </div>
+                <div class="form-group">
+                    <label for="taxId">เลขภาษี (Tax ID):</label>
+                    <input type="text" id="taxId" name="taxId" pattern="\d{13}" title="กรุณากรอกเลขประจำตัวผู้เสียภาษี 13 หลัก">
+                </div>
+                <div class="form-group">
+                    <label>สำนักงาน (Branch Type):</label>
+                    <div class="branch-options">
+                        <input type="radio" id="branchHeadOffice" name="branchType" value="สำนักงานใหญ่" checked>
+                        <label for="branchHeadOffice">สำนักงานใหญ่ (Head Office)</label>
+                        <input type="radio" id="branchSub" name="branchType" value="สาขา">
+                        <label for="branchSub">สาขา (Branch)</label>
+                    </div>
+                    <input type="text" id="branchNumber" name="branchNumber" placeholder="เลขที่สาขา (ถ้ามี)" style="margin-top: 5px; display: none;">
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">ราคาสินค้า/บริการ (ก่อน VAT) (Amount):</label>
+                    <input type="number" id="productPrice" name="productPrice" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="vatAmount">ภาษีมูลค่าเพิ่ม (VAT Amount):</label>
+                    <input type="number" id="vatAmount" name="vatAmount" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="totalPrice">ราคารวม (Total Amount):</label>
+                    <input type="number" id="totalPrice" name="totalPrice" step="0.01" required>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="reset">ล้างข้อมูล</button>
+                <button type="submit">เพิ่มข้อมูลลงตาราง</button>
+            </div>
+        </form>
+
+        <div class="data-table-container">
+            <h2>รายการข้อมูลที่บันทึก (ชั่วคราว)</h2>
+            <table class="data-table" id="taxDataTable">
+                <thead>
+                    <tr>
+                        <th>ลำดับ</th>
+                        <th>วันที่</th>
+                        <th>เลขที่</th>
+                        <th>ชื่อบริษัท</th>
+                        <th>เลขภาษี</th>
+                        <th>สำนักงาน</th>
+                        <th>สาขาที่</th>
+                        <th>ราคาสินค้า</th>
+                        <th>ภาษี (VAT)</th>
+                        <th>ราคารวม</th>
+                        <th class="actions-column">การกระทำ</th> </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('taxDataForm');
+            const dataTableBody = document.querySelector('#taxDataTable tbody');
+            const branchSubRadio = document.getElementById('branchSub');
+            const branchHeadOfficeRadio = document.getElementById('branchHeadOffice');
+            const branchNumberInput = document.getElementById('branchNumber');
+            const sequenceInput = document.getElementById('sequence');
+
+            let currentSequence = 1;
+
+            function updateDisplayedSequenceNumbers() {
+                const rows = dataTableBody.querySelectorAll('tr');
+                rows.forEach((row, index) => {
+                    row.cells[0].textContent = index + 1;
+                });
+                currentSequence = rows.length + 1;
+                sequenceInput.value = currentSequence;
+            }
+
+            function toggleBranchNumberInput() {
+                branchNumberInput.style.display = branchSubRadio.checked ? 'block' : 'none';
+                if (!branchSubRadio.checked) {
+                    branchNumberInput.value = '';
+                }
+            }
+
+            branchSubRadio.addEventListener('change', toggleBranchNumberInput);
+            branchHeadOfficeRadio.addEventListener('change', toggleBranchNumberInput);
+
+            const productPriceInput = document.getElementById('productPrice');
+            const vatAmountInput = document.getElementById('vatAmount');
+            const totalPriceInput = document.getElementById('totalPrice');
+            const vatRate = 0.07;
+
+            function calculateVAT() {
+                const price = parseFloat(productPriceInput.value) || 0;
+                const vat = parseFloat((price * vatRate).toFixed(2));
+                vatAmountInput.value = vat;
+                totalPriceInput.value = (price + vat).toFixed(2);
+            }
+
+            function calculateTotalFromVAT() {
+                 const vat = parseFloat(vatAmountInput.value) || 0;
+                 const price = parseFloat(productPriceInput.value) || 0;
+                 if (price > 0) {
+                     totalPriceInput.value = (price + vat).toFixed(2);
+                 } else if (vat > 0 && vatRate > 0) {
+                    const calculatedPrice = parseFloat((vat / vatRate).toFixed(2));
+                    productPriceInput.value = calculatedPrice;
+                    totalPriceInput.value = (calculatedPrice + vat).toFixed(2);
+                 } else {
+                    totalPriceInput.value = '';
+                 }
+            }
+
+            productPriceInput.addEventListener('input', calculateVAT);
+            vatAmountInput.addEventListener('input', calculateTotalFromVAT);
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                const newRow = dataTableBody.insertRow();
+                newRow.insertCell().textContent = dataTableBody.rows.length; // ลำดับจะถูกอัปเดตทีหลัง
+                newRow.insertCell().textContent = data.date;
+                newRow.insertCell().textContent = data.documentNumber;
+                newRow.insertCell().textContent = data.companyName;
+                newRow.insertCell().textContent = data.taxId;
+                newRow.insertCell().textContent = data.branchType;
+                newRow.insertCell().textContent = data.branchType === 'สาขา' ? data.branchNumber : '-';
+                newRow.insertCell().textContent = parseFloat(data.productPrice).toFixed(2);
+                newRow.insertCell().textContent = parseFloat(data.vatAmount).toFixed(2);
+                newRow.insertCell().textContent = parseFloat(data.totalPrice).toFixed(2);
+
+                // Add delete button cell
+                const actionsCell = newRow.insertCell();
+                actionsCell.classList.add('actions-column'); // Add class for styling
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'ลบ';
+                deleteButton.classList.add('delete-btn');
+                deleteButton.type = 'button'; // Prevent form submission
+                deleteButton.addEventListener('click', function() {
+                    if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                        dataTableBody.removeChild(newRow);
+                        updateDisplayedSequenceNumbers(); // อัปเดตลำดับหลังลบ
+                    }
+                });
+                actionsCell.appendChild(deleteButton);
+
+                form.reset();
+                updateDisplayedSequenceNumbers(); // อัปเดตลำดับและ currentSequence สำหรับฟอร์ม
+                toggleBranchNumberInput();
+                document.getElementById('date').focus();
+            });
+
+            form.addEventListener('reset', function() {
+                setTimeout(() => {
+                    toggleBranchNumberInput();
+                    updateDisplayedSequenceNumbers(); // อัปเดตลำดับและ currentSequence สำหรับฟอร์ม
+                    document.getElementById('date').focus();
+                }, 0);
+            });
+
+            // Initialize
+            updateDisplayedSequenceNumbers();
+            toggleBranchNumberInput();
+            document.getElementById('date').focus();
+        });
+    </script>
+</body>
+</html>

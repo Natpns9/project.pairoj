@@ -264,5 +264,84 @@ input[type="text"]:focus-visible {
         font-size: 0.85em;
     }
 }
+/* ... your existing styles ... */
 
+/* === Bottom Navigation Menu Styles === */
+.bottom-nav-menu {
+    background-color: #f8f9fa; /* Light background color */
+    border-top: 1px solid #dee2e6; /* Subtle top border */
+    display: flex;
+    justify-content: space-around; /* Distribute items evenly */
+    align-items: center;
+    position: fixed; /* Fixed position */
+    bottom: 0;       /* Stick to the bottom */
+    left: 0;
+    width: 100%;
+    padding: 10px 0; /* Padding top/bottom */
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Optional shadow for depth */
+    z-index: 1000; /* Ensure it's above other content except modals etc. */
+}
+
+.bottom-nav-menu .nav-item {
+    color: #007bff; /* Link color */
+    text-decoration: none;
+    padding: 8px 12px;
+    font-size: 0.9em;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    text-align: center;
+}
+
+.bottom-nav-menu .nav-item:hover {
+    background-color: #e9ecef; /* Light hover background */
+    color: #0056b3; /* Darker link color on hover */
+}
+
+.bottom-nav-menu .nav-item.active { /* Optional: style for active link */
+    font-weight: bold;
+    color: #0056b3;
+}
+
+/* Adjust page content padding to prevent overlap with bottom menu */
+body {
+    /* ... other body styles ... */
+    padding-bottom: 70px; /* Adjust this value based on the height of your bottom-nav-menu */
+}
+
+/* Ensure fixed-back-button is above the new menu or adjust its position */
+.fixed-back-button-container {
+    /* Example: adjust if it overlaps. It might need a higher z-index or different positioning */
+    /* bottom: 80px; /* Example: Raise it above the new menu */
+    z-index: 1001; /* Higher than bottom-nav-menu */
+}
+
+
+/* Responsive adjustments for bottom menu if needed */
+@media (max-width: 480px) {
+    .bottom-nav-menu .nav-item {
+        font-size: 0.8em; /* Smaller font on small screens */
+        padding: 8px 5px;
+    }
+    body {
+        padding-bottom: 60px; /* Adjust for smaller menu */
+    }
+}
+/* In style-search.css */
+/* ... other styles ... */
+
+.result-item a.company-name-link {
+    text-decoration: none;
+    color: #007bff; /* Or your preferred link color */
+    display: block; /* Makes the entire list item area clickable if you want */
+    padding: 5px 0;
+}
+
+.result-item a.company-name-link:hover .company-name {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+.result-item .company-name {
+    font-weight: bold; /* Or keep it normal */
+}
 /* ... (media query สำหรับ 360px ถ้ามี) ... */
