@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ค้นหาข้อมูล</title> <link rel="stylesheet" href="style-search.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <main class="container">
+            <section class="search-section">
+                <form class="search-form modern-search-form" id="companySearchForm">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon"><i class="fas fa-search"></i></span>
+                        <input type="text" id="searchQuery" name="searchQuery" placeholder="ชื่อบริษัท/เลขประจำตัวผู้เสียภาษี">
+                        <button type="button" class="clear-search-btn" id="clearSearch" title="ล้างคำค้นหา" style="display:none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <button type="submit" class="submit-search-btn" title="ค้นหา">
+                        <i class="fas fa-arrow-right"></i> <span class="btn-text">ค้นหา</span>
+                    </button>
+                </form>
+            </section>
+
+            <section class="results-display-section" id="resultsDisplaySection" style="display: none;">
+                <div class="results-header">
+                    <h2 id="resultsTitle">ผลการค้นหา</h2>
+                    <span class="results-count" id="resultsCount"></span>
+                </div>
+                <div class="no-results" id="noResultsMessage" style="display: none;">
+                    <p>ไม่พบข้อมูลบริษัทที่ตรงกับคำค้นหาของคุณ</p>
+                    <p>กรุณาลองค้นหาด้วยคำอื่น หรือตรวจสอบคำค้นหาอีกครั้ง</p>
+                </div>
+                <ul class="results-list" id="resultsList"></ul>
+                <nav class="pagination" aria-label="Page navigation" id="paginationControls" style="display: none;"></nav>
+            </section>
+        </main>
+
+        </div>
+        <div class="fixed-back-button-container">
+        <a href="WindowsFronted/menu.html" class="fixed-back-btn" title="Back">&larr; Back</a>
+    </div>
+
+    <script src="script-search.js"></script>
+</body>
+</html>

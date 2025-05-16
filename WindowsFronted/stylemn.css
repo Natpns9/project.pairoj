@@ -30,17 +30,16 @@ body {
 
 .header-content {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: space-between; /* จัดช่องว่างระหว่าง items */
+    align-items: center; /* จัดให้ items อยู่กึ่งกลางแนวตั้งซึ่งกันและกัน */
 }
 
 .logo-container {
     /* ใช้ div นี้แทนที่ด้วย img หรือ svg ของโลโก้สามเหลี่ยม */
-    width: 60px; /* ปรับขนาดตามโลโก้จริง */
-    height: 60px;
-    background-color: #90ee90; /* สีเขียวอ่อนสำหรับ placeholder สามเหลี่ยม */
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%); /* สร้างรูปสามเหลี่ยมด้วย CSS */
-    /* ถ้าใช้รูปภาพ ให้ใช้ CSS สำหรับ img ใน .logo-container img แทน */
+    width: 100px; /* ปรับขนาดตามโลโก้จริง */
+    height: 100px;
+    
+    
 }
 .logo-container img {
     max-width: 100%;
@@ -50,9 +49,10 @@ body {
 
 
 .company-details {
-    text-align: center;
-    flex-grow: 1; /* ให้ขยายเต็มพื้นที่ตรงกลาง */
-    padding: 0 15px; /* ระยะห่างซ้ายขวา */
+    text-align: center; /* ทำให้ข้อความข้างใน div นี้อยู่ตรงกลาง */
+    flex-grow: 1;       /* ทำให้ div นี้ขยายเพื่อเติมพื้นที่ว่างตรงกลาง */
+    padding: 0 15px;
+    min-width: 300px;
 }
 
 .company-details h1 {
@@ -72,29 +72,44 @@ body {
     color: #555;
 }
 
+
+.auth-link {
+    text-decoration: none;
+    color: #337ab7; /* สีลิงก์ตัวอย่าง */
+    font-size: 0.9em;
+    margin: 0 3px; /* ลดระยะห่างข้างลิงก์เล็กน้อย */
+    padding: 5px;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+    color: #23527c;
+}
+
+.auth-separator {
+    font-size: 0.9em;
+    color: #777;
+    margin: 0 2px;
+}
+
+/* ปรับปรุงการแสดงผล user-profile ที่มีอยู่ (ถ้าจำเป็น) */
 .user-profile {
-    /* ใช้ div นี้แทนที่ด้วย img หรือ svg ของไอคอนผู้ใช้ */
-    width: 50px; /* ปรับขนาดตามไอคอนจริง */
+    width: 50px;
     height: 50px;
-    background-color: #3498db; /* สีฟ้าสำหรับ placeholder วงกลม */
-    border-radius: 50%; /* ทำให้เป็นวงกลม */
+    background-color: #3498db;
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     color: white;
     font-weight: bold;
-    /* ถ้าใช้รูปภาพ ให้ใช้ CSS สำหรับ img ใน .user-profile img แทน */
+    font-size: 1.5em; /* ทำให้ตัว 'U' ใหญ่ขึ้นหน่อย */
+    /* margin-bottom: 5px;  ถูกย้ายไปที่ .user-profile-section .user-profile */
 }
-.user-profile img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 50%;
-    display: block; /* Remove extra space below image */
-}
-.user-profile-text {
-    font-size: 0.7em;
-    text-align: center;
-    margin-top: 5px;
+ี.user-actions{
+    flex-basis: 150px;
+    min-width: 120px;
+    flex-shrink: 0;
 }
 
 
@@ -163,6 +178,47 @@ body {
 .footer-links a:hover {
     color: #fff;
 }
+/* Add specific styles for login page if needed */
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .login-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .login-container button:hover {
+            background-color: #4cae4c;
+        }
+        .login-container p {
+            text-align: center;
+            margin-top: 15px;
+        }
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
@@ -212,5 +268,22 @@ body {
     }
     .main-content h2 {
         font-size: 1.4em;
+    }
+}
+@media (min-width: 768px) {
+    .user-auth-section {
+        flex-direction: row; /* ลิงก์ login/signup แนวนอน */
+        align-items: center;
+    }
+    .user-profile-section {
+        flex-direction: row; /* ไอคอนโปรไฟล์และลิงก์ logout แนวนอน */
+        align-items: center;
+    }
+    .user-profile-section .user-profile {
+        margin-bottom: 0;
+        margin-right: 10px; /* ระยะห่างระหว่างไอคอนกับลิงก์ logout */
+    }
+    .user-actions {
+      align-items: flex-end; /* หรือ center ตามความเหมาะสมของ layout โดยรวม */
     }
 }

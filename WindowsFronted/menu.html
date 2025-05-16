@@ -10,15 +10,25 @@
     <header class="site-header">
         <div class="container header-content">
             <div class="logo-container">
+                <img src="logo.png" alt="logo">
                 </div>
             <div class="company-details">
                 <h1>บริษัท ไพโรจน์พัฒนาการบัญชี จำกัด</h1>
                 <p class="eng-name">PAIROJ ACCOUNTING DEVELOPMENT CO., LTD.</p>
                 <p>ที่อยู่: [ใส่ที่อยู่บริษัท] | เลขเสียภาษี: [ใส่เลขเสียภาษี] | เบอร์โทร: [ใส่เบอร์โทร]</p>
             </div>
-            <div>
+            
                 <div class="user-profile">
                     U
+                </div>
+             <div id="userAuthSection" class="user-auth-section">
+                    <a href="login.html" class="auth-link">เข้าสู่ระบบ</a>
+                    <span class="auth-separator">/</span>
+                    <a href="signup.html" class="auth-link">สมัครสมาชิก</a>
+                </div>
+                <div id="userProfileSection" class="user-profile-section" style="display:none;"> <div class="user-profile">
+                        U </div>
+                    <a href="#" id="logoutLink" class="auth-link">ออกจากระบบ</a>
                 </div>
         </div>
     </header>
@@ -26,10 +36,10 @@
     <main class="main-content container">
         <h2>ระบบยื่นภาษีออนไลน์</h2>
         <div class="action-buttons">
-            <a href="vat-purchase.html" class="btn">ภาษีซื้อ</a>
-            <a href="vat-sale.html" class="btn">ภาษีขาย</a>
-            <a href="pnd3.html" class="btn">ภ.ง.ด.3</a>
-            <a href="pnd53.html" class="btn">ภ.ง.ด.53</a>
+            <a href="/search-company.html" class="btn">ภาษีซื้อ</a>
+            <a href="/search-company.html" class="btn">ภาษีขาย</a>
+            <a href="/search-company.html" class="btn">ภ.ง.ด.3</a>
+            <a href="/search-company.html" class="btn">ภ.ง.ด.53</a>
             </div>
             </div>
         
@@ -46,10 +56,7 @@
         </div>
     </footer>
 
-    <script>
-        // แสดงปีปัจจุบันใน Footer
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
-    </script>
-
+ 
+        <script src="login.js"></script>
 </body>
 </html>
