@@ -3,60 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตารางข้อมูลพร้อมระบบอัตโนมัติ (ส่งออกได้)</title>
+    <title>ตารางข้อมูลพร้อมระบบอัตโนมัติ (แยกคำนำหน้า)</title>
     <style>
-        body {
-            font-family: sans-serif;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            font-size: 0.85em;
-        }
-        th, td {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 5px;
-        }
-        th {
-            background-color: #f2f2f2;
-            white-space: nowrap;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        select, input[type="text"], input[type="number"], input[type="date"] {
-            width: 98%;
-            padding: 4px;
-            box-sizing: border-box;
-            font-size: 1em;
-        }
-        .vat-amount-display {
-            font-weight: bold;
-        }
-        button {
-            padding: 8px 15px;
-            margin: 10px 5px 10px 0; /* ปรับ margin ให้ปุ่มไม่ชิดกันเกินไป */
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        button#exportCsvBtn { /* สีปุ่ม Export อาจจะแตกต่างเล็กน้อย */
-            background-color: #007bff;
-        }
-        button#exportCsvBtn:hover {
-            background-color: #0056b3;
-        }
+        body { font-family: sans-serif; }
+        table { border-collapse: collapse; width: 100%; font-size: 0.8em; } /* ปรับ font-size เล็กน้อย */
+        th, td { border: 1px solid #dddddd; text-align: left; padding: 4px; } /* ปรับ padding */
+        th { background-color: #f2f2f2; white-space: nowrap; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        select, input[type="text"], input[type="number"], input[type="date"] { width: 98%; padding: 4px; box-sizing: border-box; font-size: 1em; }
+        .vat-amount-display { font-weight: bold; }
+        button { padding: 8px 15px; margin: 10px 5px 10px 0; cursor: pointer; color: white; border: none; border-radius: 4px; }
+        button#addRowBtn { background-color: #4CAF50; }
+        button#addRowBtn:hover { background-color: #45a049; }
+        button#exportCsvBtn { background-color: #007bff; }
+        button#exportCsvBtn:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
 
-<h2>ตารางบันทึกข้อมูล (ปรับปรุงล่าสุด - ส่งออกได้)</h2>
+<h2>ตารางบันทึกข้อมูล (ปรับปรุงล่าสุด - แยกคำนำหน้า)</h2>
 
 <button id="addRowBtn">เพิ่มแถวใหม่</button>
 <button id="exportCsvBtn">ส่งออกเป็น CSV (Excel)</button>
@@ -65,7 +30,9 @@
     <thead>
         <tr>
             <th>ลำดับที่</th>
-            <th>ชื่อผู้เสียภาษีอากร/ผู้ประกอบการ</th>
+            <th>เลือกกิจการ</th> {/* ชื่อเต็มสำหรับ lookup */}
+            <th>คำนำหน้า</th> {/* Dropdown: บริษัท, หจก., อื่นๆ */}
+            <th>ชื่อกิจการ (หลัก)</th> {/* ชื่อกิจการไม่รวมคำนำหน้า */}
             <th>รหัสผู้เสียภาษีอากร</th>
             <th>ชื่อสถานประกอบการ/อาคาร</th>
             <th>เลขที่/หมู่ที่</th>
@@ -89,9 +56,23 @@
             <td class="row-number">1</td>
             <td>
                 <select class="company-select">
-                    <option value="">-- เลือกบริษัท --</option>
+                    <option value="">-- เลือกกิจการ --</option>
                     </select>
             </td>
+            <td>
+                <select class="prefix-select">
+                    <option value="">--</option>
+                    <option value="บริษัท">บริษัท</option>
+                    <option value="หจก.">หจก.</option>
+                    <option value="หสน.">หสน.</option>
+                    <option value="ร้าน">ร้าน</option>
+                    <option value="นาย">นาย</option>
+                    <option value="นาง">นาง</option>
+                    <option value="น.ส.">น.ส.</option>
+                    <option value="อื่นๆ">อื่นๆ</option>
+                </select>
+            </td>
+            <td class="main-name-display"></td>
             <td class="tax-id-display"></td>
             <td class="establishment-name-display"></td>
             <td class="address-number-moo-display"></td>
@@ -105,12 +86,7 @@
             <td><input type="text" class="income-type-input" placeholder="เช่น ค่าบริการ"></td>
             <td>
                 <select class="tax-rate-select">
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="3" selected>3</option>
-                    <option value="5">5</option>
-                    <option value="7">7</option>
-                    <option value="10">10</option>
+                    <option value="0">0</option><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option><option value="7">7</option><option value="10">10</option>
                 </select>
             </td>
             <td><input type="number" class="value-input" placeholder="0.00" step="0.01"></td>
@@ -125,61 +101,41 @@
     const companyDataStore = [
         {
             id: "companyA",
-            name: "บริษัท รักษาความปลอดภัย สยามการ์ด แอนด์ คลีนนิ่ง จำกัด",
-            taxId: "0603562007770",
-            establishmentName: "-",
-            number: "2",
-            soi: "ฉลองกรุง 14",
-            road: "ฉลองกรุง",
-            moo: "",
-            subdistrict: "ลำปลาทิว",
-            district: "ลาดกระบัง",
-            province: "กรุงเทพฯ",
-            postalCode: "10520"
+            displayName: "บริษัท รักษาความปลอดภัย สยามการ์ด แอนด์ คลีนนิ่ง จำกัด", // ชื่อเต็มสำหรับ dropdown
+            prefix: "บริษัท",
+            mainName: "รักษาความปลอดภัย สยามการ์ด แอนด์ คลีนนิ่ง จำกัด", // ชื่อหลัก
+            taxId: "0603562007770", establishmentName: "-", number: "2", soi: "ฉลองกรุง 14", road: "ฉลองกรุง", moo: "", subdistrict: "ลำปลาทิว", district: "ลาดกระบัง", province: "กรุงเทพฯ", postalCode: "10520"
         },
         {
             id: "companyB",
-            name: "บริษัท พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาบางนา",
-            taxId: "0105532012207",
-            establishmentName: "อาคารบางนาทาวเวอร์ ตึกบี ชั้น 15",
-            number: "999/64",
-            soi: "",
-            road: "บางนา-ตราด",
-            moo: "1",
-            subdistrict: "บางแก้ว",
-            district: "บางพลี",
-            province: "สมุทรปราการ",
-            postalCode: "10540"
+            displayName: "ห้างหุ้นส่วนจำกัด พรอสเพอร์ เอ็นจิเนียริ่ง (สาขาบางนา)", // ตัวอย่างเปลี่ยนเป็น หจก.
+            prefix: "หจก.",
+            mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง (สาขาบางนา)",
+            taxId: "0105532012207", establishmentName: "อาคารบางนาทาวเวอร์ ตึกบี ชั้น 15", number: "999/64", soi: "", road: "บางนา-ตราด", moo: "1", subdistrict: "บางแก้ว", district: "บางพลี", province: "สมุทรปราการ", postalCode: "10540"
         },
         {
             id: "companyC",
-            name: "บริษัท พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาพัฒนาการ",
-            taxId: "0105532012207",
-            establishmentName: "สำนักงานพัฒนาการ",
-            number: "17",
-            soi: "พัฒนาการ 69",
-            road: "พัฒนาการ",
-            moo: "",
-            subdistrict: "ประเวศ",
-            district: "ประเวศ",
-            province: "กรุงเทพฯ",
-            postalCode: "10250"
+            displayName: "บริษัท พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาพัฒนาการ",
+            prefix: "บริษัท",
+            mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาพัฒนาการ",
+            taxId: "0105532012207", establishmentName: "สำนักงานพัฒนาการ", number: "17", soi: "พัฒนาการ 69", road: "พัฒนาการ", moo: "", subdistrict: "ประเวศ", district: "ประเวศ", province: "กรุงเทพฯ", postalCode: "10250"
         },
         {
             id: "companyD",
-            name: "บริษัท บี.กริม เพาเวอร์ จำกัด (มหาชน)",
-            taxId: "0105547021126",
-            establishmentName: "อาคาร ดร.เกฮาร์ด ลิงค์",
-            number: "5",
-            soi: "กรุงเทพกรีฑา 37 แยก 8",
-            road: "กรุงเทพกรีฑา",
-            moo: "",
-            subdistrict: "หัวหมาก",
-            district: "บางกะปิ",
-            province: "กรุงเทพฯ",
-            postalCode: "10240"
+            displayName: "ร้าน บี.กริม เพาเวอร์ เซอร์วิส", // ตัวอย่างเป็น ร้าน
+            prefix: "ร้าน",
+            mainName: "บี.กริม เพาเวอร์ เซอร์วิส",
+            taxId: "0105547021126", establishmentName: "อาคาร ดร.เกฮาร์ด ลิงค์", number: "5", soi: "กรุงเทพกรีฑา 37 แยก 8", road: "กรุงเทพกรีฑา", moo: "", subdistrict: "หัวหมาก", district: "บางกะปิ", province: "กรุงเทพฯ", postalCode: "10240"
         }
     ];
+
+    function getCurrentDateString() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
         populateCompanySelects();
@@ -190,36 +146,35 @@
         dataTable.addEventListener('input', handleTableInput);
 
         document.getElementById('addRowBtn').addEventListener('click', addNewRow);
-        
-        // *** เพิ่ม Event Listener สำหรับปุ่ม Export CSV ***
         document.getElementById('exportCsvBtn').addEventListener('click', function() {
-            exportTableToCSV('ข้อมูลตาราง ' + new Date().toISOString().slice(0,10) + '.csv'); // ตั้งชื่อไฟล์พร้อมวันที่
+            exportTableToCSV('ข้อมูลตาราง ' + getCurrentDateString() + '.csv');
         });
     });
 
     function populateCompanySelects() {
         const companySelects = document.querySelectorAll('.company-select');
-        companySelects.forEach(select => {
-            while (select.options.length > 1) {
-                select.remove(1);
+        companySelects.forEach(selectElement => { // เปลี่ยนชื่อตัวแปรเป็น selectElement เพื่อไม่ให้ซ้ำ
+            while (selectElement.options.length > 1) {
+                selectElement.remove(1);
             }
             companyDataStore.forEach(company => {
                 const option = document.createElement('option');
                 option.value = company.id;
-                option.textContent = company.name;
-                select.appendChild(option);
+                option.textContent = company.displayName; // ใช้ displayName
+                selectElement.appendChild(option);
             });
         });
     }
     
     function initializeExistingRows() {
         const tableBody = document.getElementById('dataTable').querySelector('tbody');
+        const currentDate = getCurrentDateString();
         tableBody.querySelectorAll('tr').forEach((row, index) => {
             row.querySelector('.row-number').textContent = index + 1;
             const withholdingInput = row.querySelector('.withholding-condition-input');
-            if (withholdingInput && withholdingInput.value === "") { // Ensure default only if empty
-                withholdingInput.value = '1';
-            }
+            if (withholdingInput && withholdingInput.value === "") { withholdingInput.value = '1'; }
+            const dateInput = row.querySelector('.date-input');
+            if (dateInput && !dateInput.value) { dateInput.value = currentDate; }
         });
     }
 
@@ -230,9 +185,7 @@
 
         if (target.classList.contains('company-select')) {
             populateCompanyData(currentRow, target.value);
-        }
-
-        if (target.classList.contains('value-input') || target.classList.contains('tax-rate-select')) {
+        } else if (target.classList.contains('value-input') || target.classList.contains('tax-rate-select')) {
             updateTax(currentRow);
         }
     }
@@ -241,29 +194,24 @@
         const target = event.target;
         const currentRow = target.closest('tr');
         if (!currentRow) return;
-
-        if (target.classList.contains('value-input')) {
-             updateTax(currentRow);
-        }
+        if (target.classList.contains('value-input')) { updateTax(currentRow); }
     }
     
     function populateCompanyData(row, selectedCompanyId) {
         const company = companyDataStore.find(c => c.id === selectedCompanyId);
         
+        // ตั้งค่า คำนำหน้า และ ชื่อกิจการ (หลัก)
+        row.querySelector('.prefix-select').value = company ? company.prefix : '';
+        row.querySelector('.main-name-display').textContent = company ? company.mainName : '';
+
         row.querySelector('.tax-id-display').textContent = company ? company.taxId : '';
         row.querySelector('.establishment-name-display').textContent = company ? company.establishmentName : '';
-        
         let numberMooText = '';
         if (company) {
-            if (company.number && company.number.trim() !== '') {
-                numberMooText += company.number.trim();
-            }
-            if (company.moo && company.moo.trim() !== '') {
-                numberMooText += (numberMooText ? ' ' : '') + 'หมู่ ' + company.moo.trim();
-            }
+            if (company.number && company.number.trim() !== '') { numberMooText += company.number.trim(); }
+            if (company.moo && company.moo.trim() !== '') { numberMooText += (numberMooText ? ' ' : '') + 'หมู่ ' + company.moo.trim(); }
         }
         row.querySelector('.address-number-moo-display').textContent = numberMooText;
-        
         row.querySelector('.soi-display').textContent = company ? company.soi : '';
         row.querySelector('.road-display').textContent = company ? company.road : '';
         row.querySelector('.subdistrict-display').textContent = company ? company.subdistrict : '';
@@ -276,10 +224,8 @@
         const valueInput = row.querySelector('.value-input');
         const taxRateSelect = row.querySelector('.tax-rate-select');
         const vatAmountDisplay = row.querySelector('.vat-amount-display');
-
         const value = parseFloat(valueInput.value) || 0;
         const taxRate = parseFloat(taxRateSelect.value) || 0;
-
         const vatAmount = (value * taxRate) / 100;
         vatAmountDisplay.textContent = vatAmount.toFixed(2);
     }
@@ -287,112 +233,97 @@
     function addNewRow() {
         const tableBody = document.getElementById('dataTable').querySelector('tbody');
         const firstRow = tableBody.querySelector('tr'); 
-        if (!firstRow) {
-            // This case should ideally not happen if you ensure at least one row template exists
-            // or handle table creation if tbody is initially empty.
-            // For now, let's assume the first row in tbody is the template.
-            // If tableBody is empty, you might need a more robust way to create the first row from scratch or have a hidden template row.
+        let newRow;
+
+        if (!firstRow && tableBody.rows.length === 0) {
             const tempRowHTML = `
                 <tr>
-                    <td class="row-number">${tableBody.rows.length + 1}</td>
-                    <td><select class="company-select"><option value="">-- เลือกบริษัท --</option></select></td>
-                    <td class="tax-id-display"></td>
-                    <td class="establishment-name-display"></td>
-                    <td class="address-number-moo-display"></td>
-                    <td class="soi-display"></td>
-                    <td class="road-display"></td>
-                    <td class="subdistrict-display"></td>
-                    <td class="district-display"></td>
-                    <td class="province-display"></td>
-                    <td class="postal-code-display"></td>
+                    <td class="row-number">1</td>
+                    <td><select class="company-select"><option value="">-- เลือกกิจการ --</option></select></td>
+                    <td><select class="prefix-select"><option value="">--</option><option value="บริษัท">บริษัท</option><option value="หจก.">หจก.</option><option value="หสน.">หสน.</option><option value="ร้าน">ร้าน</option><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="น.ส.">น.ส.</option><option value="อื่นๆ">อื่นๆ</option></select></td>
+                    <td class="main-name-display"></td>
+                    <td class="tax-id-display"></td><td class="establishment-name-display"></td><td class="address-number-moo-display"></td>
+                    <td class="soi-display"></td><td class="road-display"></td><td class="subdistrict-display"></td>
+                    <td class="district-display"></td><td class="province-display"></td><td class="postal-code-display"></td>
                     <td><input type="date" class="date-input"></td>
                     <td><input type="text" class="income-type-input" placeholder="เช่น ค่าบริการ"></td>
-                    <td>
-                        <select class="tax-rate-select">
-                            <option value="0">0</option><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option><option value="7">7</option><option value="10">10</option>
-                        </select>
-                    </td>
+                    <td><select class="tax-rate-select"><option value="0">0</option><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option><option value="7">7</option><option value="10">10</option></select></td>
                     <td><input type="number" class="value-input" placeholder="0.00" step="0.01"></td>
                     <td class="vat-amount-display">0.00</td>
                     <td><input type="text" class="withholding-condition-input" value="1"></td>
                     <td><input type="text" class="notes-input"></td>
                 </tr>`;
             tableBody.insertAdjacentHTML('beforeend', tempRowHTML);
-            populateCompanySelects(); // Repopulate dropdowns for the new row
-            return;
+            newRow = tableBody.lastElementChild;
+            populateCompanySelects(); // เติม options ให้ .company-select
+        } else {
+            newRow = firstRow.cloneNode(true);
         }
-
-        const newRow = firstRow.cloneNode(true);
-        newRow.querySelector('.row-number').textContent = tableBody.rows.length + 1;
-        newRow.querySelector('.company-select').value = '';
-        newRow.querySelectorAll('.tax-id-display, .establishment-name-display, .address-number-moo-display, .soi-display, .road-display, .subdistrict-display, .district-display, .province-display, .postal-code-display, .vat-amount-display').forEach(td => td.textContent = '');
-        newRow.querySelector('.vat-amount-display').textContent = '0.00'; // Ensure VAT is reset
         
-        newRow.querySelectorAll('input[type="date"], input[type="text"].income-type-input, input[type="number"].value-input, input[type="text"].notes-input').forEach(input => input.value = '');
-        newRow.querySelector('.tax-rate-select').value = '3';
+        let newRowNumber = tableBody.rows.length;
+        if(firstRow && newRow !== firstRow) newRowNumber = tableBody.rows.length; // ถ้ามีการโคลน แถวใหม่จะยังไม่ได้ถูกนับ
+        else if (!firstRow) newRowNumber = 1; // ถ้าเป็นแถวแรกสุด
+
+        newRow.querySelector('.row-number').textContent = newRowNumber;
+
+
+        newRow.querySelector('.company-select').value = '';
+        newRow.querySelector('.prefix-select').value = ''; // รีเซ็ตคำนำหน้า
+        newRow.querySelector('.main-name-display').textContent = ''; // ล้างชื่อกิจการหลัก
+        newRow.querySelectorAll('.tax-id-display, .establishment-name-display, .address-number-moo-display, .soi-display, .road-display, .subdistrict-display, .district-display, .province-display, .postal-code-display, .vat-amount-display').forEach(td => td.textContent = '');
+        newRow.querySelector('.vat-amount-display').textContent = '0.00';
+        
+        newRow.querySelectorAll('input[type="text"].income-type-input, input[type="number"].value-input, input[type="text"].notes-input').forEach(input => input.value = '');
+        newRow.querySelector('.date-input').value = getCurrentDateString(); 
+        newRow.querySelector('.tax-rate-select').value = '3'; 
         newRow.querySelector('.withholding-condition-input').value = '1';
         
-        tableBody.appendChild(newRow);
+        if(firstRow && newRow !== firstRow) { // หากมีการโคลน ให้ append แถวใหม่
+            tableBody.appendChild(newRow);
+        } else if (!firstRow) { // หากสร้างแถวแรก
+             //ไม่ต้องทำอะไรเพิ่ม เพราะ insertAdjacentHTML ไปแล้ว และ newRow ชี้ไปที่แถวนั้นแล้ว
+        }
     }
 
-    // *** ฟังก์ชันสำหรับ Export CSV ***
     function escapeCsvCell(cellData) {
-        if (cellData === null || cellData === undefined) {
-            return '';
-        }
-        cellData = String(cellData);
-        cellData = cellData.replace(/"/g, '""'); // Escape double quotes
-        if (cellData.search(/("|,|\n)/g) >= 0) {
-            cellData = `"${cellData}"`; // Wrap in double quotes if it contains special characters
-        }
+        if (cellData === null || cellData === undefined) { return ''; }
+        cellData = String(cellData); cellData = cellData.replace(/"/g, '""'); 
+        if (cellData.search(/("|,|\n)/g) >= 0) { cellData = `"${cellData}"`; }
         return cellData;
     }
 
     function exportTableToCSV(filename) {
-        let csvContent = "\uFEFF"; // BOM for UTF-8
+        let csvContent = "\uFEFF"; 
         const table = document.getElementById('dataTable');
         const rows = table.querySelectorAll('tr');
-
         rows.forEach(row => {
             const rowData = [];
             const cols = row.querySelectorAll('th, td');
-
             cols.forEach(col => {
                 let cellText = '';
-                if (row.parentNode.nodeName === 'TBODY') { // Data row
+                if (row.parentNode.nodeName === 'TBODY') { 
                     const companySelect = col.querySelector('select.company-select');
+                    const prefixSelect = col.querySelector('select.prefix-select'); // *** เพิ่มการดึงค่าจาก prefix-select ***
                     const inputField = col.querySelector('input[type="text"], input[type="number"], input[type="date"]');
                     const taxRateSelect = col.querySelector('select.tax-rate-select');
-                    // withholding-condition-input is covered by inputField
 
-                    if (companySelect) {
-                        cellText = companySelect.selectedIndex > 0 ? companySelect.selectedOptions[0].text : '';
-                    } else if (taxRateSelect) {
-                        cellText = taxRateSelect.value; 
-                    } else if (inputField) {
-                        cellText = inputField.value;
-                    } else { 
-                        cellText = col.textContent.trim();
-                    }
-                } else { // Header row
-                    cellText = col.textContent.trim();
-                }
+                    if (companySelect) { cellText = companySelect.selectedIndex > 0 ? companySelect.selectedOptions[0].text : ''; }
+                    else if (prefixSelect) { cellText = prefixSelect.value; } // *** ดึงค่า value ของ prefix ***
+                    else if (taxRateSelect) { cellText = taxRateSelect.value; } 
+                    else if (inputField) { cellText = inputField.value; } 
+                    else { cellText = col.textContent.trim(); } // .main-name-display จะถูกจับโดยอันนี้
+                } else { cellText = col.textContent.trim(); }
                 rowData.push(escapeCsvCell(cellText));
             });
             csvContent += rowData.join(',') + '\r\n';
         });
-
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         if (link.download !== undefined) {
             const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', filename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            link.setAttribute('href', url); link.setAttribute('download', filename);
+            link.style.visibility = 'hidden'; document.body.appendChild(link);
+            link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
         }
     }
 </script>
