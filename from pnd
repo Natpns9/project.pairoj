@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตารางข้อมูล (ปรับปรุงคำนำหน้า)</title>
+    <title>ตารางข้อมูล (ค้นหาจากเลขผู้เสียภาษีได้)</title>
     <style>
         body { font-family: sans-serif; }
         table { border-collapse: collapse; width: 100%; font-size: 0.8em; }
@@ -21,7 +21,7 @@
 </head>
 <body>
 
-<h2>ตารางบันทึกข้อมูล (ปรับปรุงคำนำหน้า)</h2>
+<h2>ตารางบันทึกข้อมูล (ค้นหาจากเลขผู้เสียภาษีได้)</h2>
 
 <button id="addRowBtn">เพิ่มแถวใหม่</button>
 <button id="exportCsvBtn">ส่งออกเป็น CSV (Excel)</button>
@@ -32,7 +32,7 @@
             <th>ลำดับที่</th>
             <th>คำนำหน้า</th>
             <th>ชื่อกิจการ (หลัก)</th>
-            <th>รหัสผู้เสียภาษีอากร</th>
+            <th>รหัสผู้เสียภาษีอากร</th> {/* เปลี่ยนเป็น Input */}
             <th>ชื่อสถานประกอบการ/อาคาร</th>
             <th>เลขที่/หมู่ที่</th>
             <th>ตรอก/ซอย</th>
@@ -58,10 +58,10 @@
                     <option value="">-- คำนำหน้า --</option>
                     <option value="บริษัท">บริษัท</option>
                     <option value="หจก.">หจก.</option>
-                     voisinage</select>
+                </select>
             </td>
             <td><input type="text" class="main-name-input" list="main-name-suggestions" placeholder="พิมพ์/เลือกชื่อกิจการหลัก"></td>
-            <td class="tax-id-display"></td>
+            <td><input type="text" class="tax-id-input" placeholder="กรอกเลขผู้เสียภาษี"></td> {/* เปลี่ยนเป็น input */}
             <td class="establishment-name-display"></td>
             <td class="address-number-moo-display"></td>
             <td class="soi-display"></td>
@@ -92,8 +92,7 @@
     const companyDataStore = [
         { prefix: "บริษัท", mainName: "รักษาความปลอดภัย สยามการ์ด แอนด์ คลีนนิ่ง จำกัด", taxId: "0603562007770", establishmentName: "-", number: "2", soi: "ฉลองกรุง 14", road: "ฉลองกรุง", moo: "", subdistrict: "ลำปลาทิว", district: "ลาดกระบัง", province: "กรุงเทพฯ", postalCode: "10520" },
         { prefix: "หจก.", mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง (สาขาบางนา)", taxId: "0105532012207", establishmentName: "อาคารบางนาทาวเวอร์ ตึกบี ชั้น 15", number: "999/64", soi: "", road: "บางนา-ตราด", moo: "1", subdistrict: "บางแก้ว", district: "บางพลี", province: "สมุทรปราการ", postalCode: "10540" },
-        { prefix: "บริษัท", mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาพัฒนาการ", taxId: "0105532012207", establishmentName: "สำนักงานพัฒนาการ", number: "17", soi: "พัฒนาการ 69", road: "พัฒนาการ", moo: "", subdistrict: "ประเวศ", district: "ประเวศ", province: "กรุงเทพฯ", postalCode: "10250" },
-        // { prefix: "ร้าน", mainName: "บี.กริม เพาเวอร์ เซอร์วิส", taxId: "0105547021126", establishmentName: "อาคาร ดร.เกฮาร์ด ลิงค์", number: "5", soi: "กรุงเทพกรีฑา 37 แยก 8", road: "กรุงเทพกรีฑา", moo: "", subdistrict: "หัวหมาก", district: "บางกะปิ", province: "กรุงเทพฯ", postalCode: "10240" }, // ตัวอย่างนี้จะหาไม่เจอถ้าเลือก prefix จาก UI
+        { prefix: "บริษัท", mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาพัฒนาการ", taxId: "0105532012207", establishmentName: "สำนักงานพัฒนาการ", number: "17", soi: "พัฒนาการ 69", road: "พัฒนาการ", moo: "", subdistrict: "ประเวศ", district: "ประเวศ", province: "กรุงเทพฯ", postalCode: "10250" }, // Tax ID ซ้ำได้ แต่ mainName + prefix ควรจะช่วยแยก
         { prefix: "บริษัท", mainName: "ไทยยูเนี่ยน กรุ๊ป จำกัด (มหาชน)", taxId: "0107537000877", establishmentName: "อาคารเอสเอ็มทาวเวอร์", number: "979/12", soi: "", road: "พหลโยธิน", moo: "", subdistrict: "สามเสนใน", district: "พญาไท", province: "กรุงเทพฯ", postalCode: "10400" }
     ];
 
@@ -127,13 +126,17 @@
         populateMainNameDatalist(); 
 
         const dataTable = document.getElementById('dataTable');
+        // *** Event listener หลักสำหรับตาราง ***
         dataTable.addEventListener('change', function(event) {
             const target = event.target;
             const currentRow = target.closest('tr');
             if (!currentRow) return;
 
-            if (target.classList.contains('prefix-select') || target.classList.contains('main-name-input')) {
-                lookupAndPopulateCompanyData(currentRow);
+            // ตรวจสอบว่า target เป็นหนึ่งในช่อง input สำหรับ lookup หรือไม่
+            if (target.classList.contains('prefix-select') ||
+                target.classList.contains('main-name-input') ||
+                target.classList.contains('tax-id-input')) {
+                attemptCompanyLookup(currentRow);
             } else if (target.classList.contains('value-input') || target.classList.contains('tax-rate-select')) {
                 updateTax(currentRow);
             }
@@ -164,8 +167,8 @@
         });
     }
 
-    function clearCompanySpecificFields(row) {
-        row.querySelector('.tax-id-display').textContent = '';
+    // เคลียร์เฉพาะข้อมูลรายละเอียดบริษัท (ที่อยู่, ชื่อสถานประกอบการ)
+    function clearCompanyDetailsFields(row) {
         row.querySelector('.establishment-name-display').textContent = '';
         row.querySelector('.address-number-moo-display').textContent = '';
         row.querySelector('.soi-display').textContent = '';
@@ -176,51 +179,87 @@
         row.querySelector('.postal-code-display').textContent = '';
     }
 
-    function lookupAndPopulateCompanyData(row) {
-        const prefix = row.querySelector('.prefix-select').value;
-        const mainName = row.querySelector('.main-name-input').value.trim();
+    // เคลียร์ข้อมูลที่เกี่ยวข้องกับบริษัททั้งหมด (รวมถึง prefix, main name, tax id inputs)
+    function clearAllCompanyDerivedFields(row) {
+        row.querySelector('.prefix-select').value = '';
+        row.querySelector('.main-name-input').value = '';
+        row.querySelector('.tax-id-input').value = ''; // เคลียร์ Tax ID input ด้วย
+        clearCompanyDetailsFields(row);
+    }
+    
+    // ฟังก์ชันสำหรับเติมข้อมูลบริษัททั้งหมดลงในฟอร์ม
+    function populateAllFieldsFromCompany(row, company) {
+        row.querySelector('.prefix-select').value = company.prefix;
+        row.querySelector('.main-name-input').value = company.mainName;
+        row.querySelector('.tax-id-input').value = company.taxId; // ตั้งค่า Tax ID ที่พบ
+        row.querySelector('.establishment-name-display').textContent = company.establishmentName || '';
+        let numberMooText = '';
+        if (company.number && company.number.trim() !== '') { numberMooText += company.number.trim(); }
+        if (company.moo && company.moo.trim() !== '') { numberMooText += (numberMooText ? ' ' : '') + 'หมู่ ' + company.moo.trim(); }
+        row.querySelector('.address-number-moo-display').textContent = numberMooText;
+        row.querySelector('.soi-display').textContent = company.soi || '';
+        row.querySelector('.road-display').textContent = company.road || '';
+        row.querySelector('.subdistrict-display').textContent = company.subdistrict || '';
+        row.querySelector('.district-display').textContent = company.district || '';
+        row.querySelector('.province-display').textContent = company.province || '';
+        row.querySelector('.postal-code-display').textContent = company.postalCode || '';
+    }
 
-        if (!mainName && !prefix) {
-            clearCompanySpecificFields(row);
-            return;
-        }
-        
-        const company = companyDataStore.find(c => {
-            const mainNameMatch = c.mainName.toLowerCase() === mainName.toLowerCase();
-            if (prefix) {
-                return c.prefix === prefix && mainNameMatch;
-            }
-            return mainNameMatch; 
-        });
+    // *** ฟังก์ชัน lookup หลัก ***
+    function attemptCompanyLookup(row) {
+        const prefixInput = row.querySelector('.prefix-select');
+        const mainNameInput = row.querySelector('.main-name-input');
+        const taxIdInput = row.querySelector('.tax-id-input');
 
-        if (company) {
-            // ตรวจสอบว่า prefix ที่เลือกใน UI (ถ้ามี) ตรงกับ prefix ของข้อมูลที่เจอ
-            // หรือถ้า UI ไม่ได้เลือก prefix ก็ให้ใช้ prefix จากข้อมูลที่เจอได้เลย
-            if (!prefix || company.prefix === prefix) {
-                 row.querySelector('.prefix-select').value = company.prefix; 
-                 row.querySelector('.tax-id-display').textContent = company.taxId;
-                 row.querySelector('.establishment-name-display').textContent = company.establishmentName;
-                 let numberMooText = '';
-                 if (company.number && company.number.trim() !== '') { numberMooText += company.number.trim(); }
-                 if (company.moo && company.moo.trim() !== '') { numberMooText += (numberMooText ? ' ' : '') + 'หมู่ ' + company.moo.trim(); }
-                 row.querySelector('.address-number-moo-display').textContent = numberMooText;
-                 row.querySelector('.soi-display').textContent = company.soi;
-                 row.querySelector('.road-display').textContent = company.road;
-                 row.querySelector('.subdistrict-display').textContent = company.subdistrict;
-                 row.querySelector('.district-display').textContent = company.district;
-                 row.querySelector('.province-display').textContent = company.province;
-                 row.querySelector('.postal-code-display').textContent = company.postalCode;
+        const prefix = prefixInput.value;
+        const mainName = mainNameInput.value.trim();
+        const taxId = taxIdInput.value.trim();
+
+        // ลำดับความสำคัญ 1: ค้นหาจาก Tax ID ถ้ามีข้อมูล
+        if (taxId) {
+            const company = companyDataStore.find(c => c.taxId === taxId);
+            if (company) {
+                populateAllFieldsFromCompany(row, company); // ถ้าพบ ให้เติมข้อมูลทั้งหมด
             } else {
-                 // กรณี mainName ตรง แต่ prefix ที่ผู้ใช้เลือกไม่ตรงกับข้อมูลที่พบ
-                 // อาจจะล้าง field หรือให้ผู้ใช้ตัดสินใจ (ปัจจุบันคือล้าง field)
-                 clearCompanySpecificFields(row);
+                // ไม่พบจาก Tax ID, ให้ล้าง Prefix, Main Name และรายละเอียดอื่นๆ แต่คง Tax ID ที่พิมพ์ไว้
+                prefixInput.value = '';
+                mainNameInput.value = '';
+                clearCompanyDetailsFields(row);
+                // taxIdInput.value = taxId; // ค่าที่พิมพ์ยังคงอยู่
             }
-        } else {
-            clearCompanySpecificFields(row);
+            return; // จบการทำงานของฟังก์ชัน lookup
+        }
+
+        // ลำดับความสำคัญ 2: ค้นหาจาก Prefix และ Main Name (ถ้า Tax ID ว่าง)
+        // จะค้นหาต่อเมื่อ mainName ไม่ว่างเปล่า (prefix อาจจะว่างหรือไม่ก็ได้)
+        if (mainName) {
+            const company = companyDataStore.find(c =>
+                c.mainName.toLowerCase() === mainName.toLowerCase() &&
+                (c.prefix === prefix || !prefix) // ถ้าผู้ใช้เลือก prefix ก็ต้องตรง, ถ้าไม่เลือก prefix ก็ให้ mainName ตรงก็พอ
+            );
+            if (company) {
+                populateAllFieldsFromCompany(row, company); // ถ้าพบ ให้เติมข้อมูลทั้งหมด (รวมถึงการตั้ง taxIdInput ด้วย)
+            } else {
+                // ไม่พบจากชื่อ, ให้ล้าง Tax ID input และรายละเอียดอื่นๆ (คง Prefix, Main Name ที่พิมพ์ไว้)
+                taxIdInput.value = '';
+                clearCompanyDetailsFields(row);
+            }
+            return; // จบการทำงาน
+        }
+
+        // ถ้าช่อง lookup หลักๆ (Tax ID และ Main Name) ว่างเปล่าทั้งหมด ก็ให้ล้างข้อมูลทั้งหมด
+        if (!taxId && !mainName && !prefix) {
+            clearAllCompanyDerivedFields(row);
+        } else if (!taxId && !mainName && prefix) {
+            // มีแต่ prefix, ไม่มี main name, ไม่มี tax id -> ล้างรายละเอียด, tax id, เหลือ prefix ไว้
+            mainNameInput.value = '';
+            taxIdInput.value = '';
+            clearCompanyDetailsFields(row);
         }
     }
 
     function updateTax(row) {
+        // ... (เหมือนเดิม) ...
         const valueInput = row.querySelector('.value-input');
         const taxRateSelect = row.querySelector('.tax-rate-select');
         const vatAmountDisplay = row.querySelector('.vat-amount-display');
@@ -240,15 +279,10 @@
             const tempRowHTML = `
                 <tr>
                     <td class="row-number">${newRowNumber}</td>
-                    <td>
-                        <select class="prefix-select">
-                            <option value="">-- คำนำหน้า --</option>
-                            <option value="บริษัท">บริษัท</option>
-                            <option value="หจก.">หจก.</option>
-                        </select>
-                    </td>
+                    <td><select class="prefix-select"><option value="">-- คำนำหน้า --</option><option value="บริษัท">บริษัท</option><option value="หจก.">หจก.</option></select></td>
                     <td><input type="text" class="main-name-input" list="main-name-suggestions" placeholder="พิมพ์/เลือกชื่อกิจการหลัก"></td>
-                    <td class="tax-id-display"></td><td class="establishment-name-display"></td><td class="address-number-moo-display"></td>
+                    <td><input type="text" class="tax-id-input" placeholder="กรอกเลขผู้เสียภาษี"></td>
+                    <td class="establishment-name-display"></td><td class="address-number-moo-display"></td>
                     <td class="soi-display"></td><td class="road-display"></td><td class="subdistrict-display"></td>
                     <td class="district-display"></td><td class="province-display"></td><td class="postal-code-display"></td>
                     <td><input type="date" class="date-input"></td>
@@ -263,20 +297,17 @@
             newRow = tableBody.lastElementChild;
         } else {
             newRow = firstRow.cloneNode(true);
-            // สำคัญ: ต้องปรับ options ของ prefix-select ในแถวที่โคลนมาใหม่ ให้เหมือนกับ template ด้านบน
-            const newPrefixSelect = newRow.querySelector('.prefix-select');
-            newPrefixSelect.innerHTML = `
-                <option value="">-- คำนำหน้า --</option>
-                <option value="บริษัท">บริษัท</option>
-                <option value="หจก.">หจก.</option>
-            `;
+            const newPrefixSelect = newRow.querySelector('.prefix-select'); // Ensure options are correct after clone
+            newPrefixSelect.innerHTML = `<option value="">-- คำนำหน้า --</option><option value="บริษัท">บริษัท</option><option value="หจก.">หจก.</option>`;
             newRow.querySelector('.row-number').textContent = newRowNumber;
             tableBody.appendChild(newRow);
         }
         
+        // รีเซ็ตค่าในแถวใหม่
         newRow.querySelector('.prefix-select').value = '';
         newRow.querySelector('.main-name-input').value = '';
-        clearCompanySpecificFields(newRow); 
+        newRow.querySelector('.tax-id-input').value = ''; // *** เคลียร์ Tax ID input ด้วย ***
+        clearCompanyDetailsFields(newRow); 
         
         newRow.querySelectorAll('input[type="text"].income-type-input, input[type="number"].value-input, input[type="text"].notes-input').forEach(input => input.value = '');
         newRow.querySelector('.date-input').value = getCurrentDateString(); 
@@ -286,6 +317,7 @@
     }
 
     function escapeCsvCell(cellData) {
+        // ... (เหมือนเดิม) ...
         if (cellData === null || cellData === undefined) { return ''; }
         cellData = String(cellData); cellData = cellData.replace(/"/g, '""'); 
         if (cellData.search(/("|,|\n)/g) >= 0) { cellData = `"${cellData}"`; }
@@ -304,11 +336,13 @@
                 if (row.parentNode.nodeName === 'TBODY') { 
                     const prefixSelect = col.querySelector('select.prefix-select');
                     const mainNameInput = col.querySelector('input.main-name-input');
-                    const inputField = col.querySelector('input[type="text"]:not(.main-name-input), input[type="number"], input[type="date"]');
+                    const taxIdInput = col.querySelector('input.tax-id-input'); // *** เพิ่มการดึงค่า Tax ID Input ***
+                    const inputField = col.querySelector('input[type="text"]:not(.main-name-input):not(.tax-id-input), input[type="number"], input[type="date"]');
                     const taxRateSelect = col.querySelector('select.tax-rate-select');
 
                     if (prefixSelect) { cellText = prefixSelect.value; } 
                     else if (mainNameInput) { cellText = mainNameInput.value; } 
+                    else if (taxIdInput) { cellText = taxIdInput.value; } // *** ดึงค่าจาก tax-id-input ***
                     else if (taxRateSelect) { cellText = taxRateSelect.value; } 
                     else if (inputField) { cellText = inputField.value; } 
                     else { cellText = col.textContent.trim(); }
