@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบฟอร์มบันทึกข้อมูลภาษี</title>
+    <style>
+        /* CSS Reset and Basic Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Tahoma', 'Sarabun', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            position: relative; /* For autocomplete positioning */
+        }
+        .form-group label {
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="number"],
+        .form-group select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            width: 100%; /* Default width, will be overridden for specific inputs */
+        }
+
+        /* Specific widths for shorter input fields */
+        .form-group input#sequence,
+        .form-group input#branchNumber {
+            max-width: 150px;
+        }
+        .form-group input#date {
+            max-width: 180px; /* Typical width for date pickers */
+        }
+        .form-group input#documentNumber {
+            max-width: 220px; /* Can be a bit longer */
+        }
+        .form-group input#productPrice,
+        .form-group input#vatAmount,
+        .form-group input#totalPrice {
+            max-width: 200px; /* For numerical inputs */
+        }
+
+
+        .form-group input[type="radio"],
+        .form-group input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        .radio-group label,
+        .checkbox-group label {
+            font-weight: normal;
+            margin-right: 15px;
+        }
+        .branch-options {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .branch-options label {
+            margin-right: 10px;
+            margin-bottom: 0;
+        }
+
+        /* Autocomplete Styles */
+        .autocomplete-container {
+            position: relative;
+        }
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            top: 100%; /* Position below the input */
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+        }
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+        .autocomplete-active {
+            background-color: DodgerBlue !important;
+            color: #ffffff;
+        }
+
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .form-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .form-actions button[type="submit"] {
+            background-color: #5cb85c;
+            color: white;
+        }
+        .form-actions button[type="submit"]:hover {
+            background-color: #4cae4c;
+        }
+        .form-actions button[type="reset"] {
+            background-color: #f0ad4e;
+            color: white;
+        }
+        .form-actions button[type="reset"]:hover {
+            background-color: #ec971f;
+        }
+        .delete-btn {
+            background-color: #d9534f;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .delete-btn:hover {
+            background-color: #c9302c;
+        }
+
+        .data-table-container {
+            margin-top: 25px;
+            overflow-x: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.85em;
+        }
+        .data-table th {
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .data-table tbody {
+             display: block;
+             max-height: 400px;
+             overflow-y: auto;
+        }
+        .data-table thead, .data-table tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .data-table tr:hover {
+            background-color: #e2e6ea;
+        }
+        .data-table th.actions-column, .data-table td.actions-column {
+            width: 80px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            /* On smaller screens, let inputs take more width if needed */
+            .form-group input#sequence,
+            .form-group input#branchNumber,
+            .form-group input#date,
+            .form-group input#documentNumber,
+            .form-group input#productPrice,
+            .form-group input#vatAmount,
+            .form-group input#totalPrice {
+                max-width: 100%; /* Allow them to take full width of the single column */
+            }
+            .data-table th, .data-table td {
+                font-size: 0.8em;
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>แบบฟอร์มบันทึกข้อมูลภาษี</h1>
+
+        <form id="taxDataForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="sequence">ลำดับ (No.):</label>
+                    <input type="number" id="sequence" name="sequence" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="date">วันที่ (Date):</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="documentNumber">เลขที่เอกสาร (Doc No.):</label>
+                    <input type="text" id="documentNumber" name="documentNumber">
+                </div>
+
+                <div class="form-group">
+                    <label for="companyNameInput">ชื่อบริษัท (Company Name):</label>
+                    <div class="autocomplete-container">
+                        <input type="text" id="companyNameInput" name="companyName" placeholder="พิมพ์เพื่อค้นหาบริษัท..." autocomplete="off" required>
+                        <div class="autocomplete-items" id="companyAutocompleteList" style="display: none;">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taxId">เลขภาษี (Tax ID):</label>
+                    <input type="text" id="taxId" name="taxId" pattern="\d{13}" title="เลขประจำตัวผู้เสียภาษี 13 หลัก" readonly>
+                </div>
+                <div class="form-group">
+                    <label>สำนักงาน (Branch Type):</label>
+                    <div class="branch-options">
+                        <input type="radio" id="branchHeadOffice" name="branchType" value="สำนักงานใหญ่" checked>
+                        <label for="branchHeadOffice">สำนักงานใหญ่ (Head Office)</label>
+                        <input type="radio" id="branchSub" name="branchType" value="สาขา">
+                        <label for="branchSub">สาขา (Branch)</label>
+                    </div>
+                    <input type="text" id="branchNumber" name="branchNumber" placeholder="เลขที่สาขา (ถ้ามี)" style="margin-top: 5px; display: none;">
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">ราคาสินค้า/บริการ (ก่อน VAT) (Amount):</label>
+                    <input type="number" id="productPrice" name="productPrice" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="vatAmount">ภาษีมูลค่าเพิ่ม (VAT Amount):</label>
+                    <input type="number" id="vatAmount" name="vatAmount" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="totalPrice">ราคารวม (Total Amount):</label>
+                    <input type="number" id="totalPrice" name="totalPrice" step="0.01" required>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="reset">ล้างข้อมูล</button>
+                <button type="submit">เพิ่มข้อมูลลงตาราง</button>
+            </div>
+        </form>
+
+        <div class="data-table-container">
+            <h2>รายการข้อมูลที่บันทึก (ชั่วคราว)</h2>
+            <table class="data-table" id="taxDataTable">
+                <thead>
+                    <tr>
+                        <th>ลำดับ</th>
+                        <th>วันที่</th>
+                        <th>เลขที่</th>
+                        <th>ชื่อบริษัท</th>
+                        <th>เลขภาษี</th>
+                        <th>สำนักงาน</th>
+                        <th>สาขาที่</th>
+                        <th>ราคาสินค้า</th>
+                        <th>ภาษี (VAT)</th>
+                        <th>ราคารวม</th>
+                        <th class="actions-column">การกระทำ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('taxDataForm');
+            const dataTableBody = document.querySelector('#taxDataTable tbody');
+            const branchSubRadio = document.getElementById('branchSub');
+            const branchHeadOfficeRadio = document.getElementById('branchHeadOffice');
+            const branchNumberInput = document.getElementById('branchNumber');
+            const sequenceInput = document.getElementById('sequence');
+            const companyNameInput = document.getElementById('companyNameInput');
+            const companyAutocompleteList = document.getElementById('companyAutocompleteList');
+            const taxIdInput = document.getElementById('taxId');
+            const dateInput = document.getElementById('date'); // Get the date input element
+
+            let currentSequence = 1;
+            let currentFocus = -1;
+            let lastSelectedDate = ''; // Variable to store the last selected date
+
+            // --- Mock Data for Companies ---
+            const companiesData = [
+                { id: "0105500000000", name: "บริษัท ไพโรจน์พัฒนาการบัญชี จำกัด", taxId: "0105500000000" },
+                { id: "0105511111111", name: "บริษัท ตัวอย่าง เอ จำกัด", taxId: "0105511111111" },
+                { id: "0107522222222", name: "บริษัท ทดสอบ บี (มหาชน)", taxId: "0107522222222" },
+                { id: "1234567890123", name: "ห้างหุ้นส่วนจำกัด ซี โปรแกรมมิ่ง", taxId: "1234567890123" },
+                { id: "9876543210987", name: "ร้าน ดีอีเอฟ การค้า", taxId: "9876543210987" },
+                { id: "ABCDEFGHIJKLM", name: "บริษัท แสงสว่าง การไฟฟ้า จำกัด", taxId: "ABCDEFGHIJKLM" },
+                { id: "NOPQRSTUVWXYZ", name: "บริษัท รุ่งเรือง เฟอร์นิเจอร์", taxId: "NOPQRSTUVWXYZ" }
+            ];
+
+            function closeAllLists(elmnt) {
+                const items = document.getElementsByClassName("autocomplete-items");
+                for (let i = 0; i < items.length; i++) {
+                    if (elmnt != items[i] && elmnt != companyNameInput) {
+                        items[i].innerHTML = "";
+                        items[i].style.display = "none";
+                    }
+                }
+            }
+
+            companyNameInput.addEventListener('input', function(e) {
+                const val = this.value;
+                closeAllLists();
+                if (!val) { companyAutocompleteList.style.display = "none"; return false; }
+                currentFocus = -1;
+                companyAutocompleteList.innerHTML = "";
+                companyAutocompleteList.style.display = "block";
+
+                let matchCount = 0;
+                companiesData.forEach(company => {
+                    if (company.name.toUpperCase().includes(val.toUpperCase()) && matchCount < 7) {
+                        const itemDiv = document.createElement('div');
+                        const matchIndex = company.name.toUpperCase().indexOf(val.toUpperCase());
+                        itemDiv.innerHTML = company.name.substring(0, matchIndex);
+                        itemDiv.innerHTML += "<strong>" + company.name.substring(matchIndex, matchIndex + val.length) + "</strong>";
+                        itemDiv.innerHTML += company.name.substring(matchIndex + val.length);
+                        itemDiv.dataset.companyName = company.name;
+                        itemDiv.dataset.taxId = company.taxId;
+                        itemDiv.addEventListener('click', function(e) {
+                            companyNameInput.value = this.dataset.companyName;
+                            taxIdInput.value = this.dataset.taxId;
+                            closeAllLists();
+                        });
+                        companyAutocompleteList.appendChild(itemDiv);
+                        matchCount++;
+                    }
+                });
+                if (matchCount === 0) {
+                    companyAutocompleteList.style.display = "none";
+                }
+            });
+
+            companyNameInput.addEventListener("keydown", function(e) {
+                let x = document.getElementById("companyAutocompleteList");
+                if (x) x = x.getElementsByTagName("div");
+                if (!x || x.length === 0) return;
+                if (e.keyCode == 40) {
+                    currentFocus++;
+                    addActive(x);
+                } else if (e.keyCode == 38) {
+                    currentFocus--;
+                    addActive(x);
+                } else if (e.keyCode == 13) {
+                    e.preventDefault();
+                    if (currentFocus > -1) {
+                        if (x) x[currentFocus].click();
+                    }
+                } else if (e.keyCode == 27) {
+                    closeAllLists();
+                }
+            });
+
+            function addActive(x) {
+                if (!x) return false;
+                removeActive(x);
+                if (currentFocus >= x.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = (x.length - 1);
+                x[currentFocus].classList.add("autocomplete-active");
+                x[currentFocus].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            function removeActive(x) {
+                for (let i = 0; i < x.length; i++) {
+                    x[i].classList.remove("autocomplete-active");
+                }
+            }
+
+            document.addEventListener("click", function (e) {
+                if (e.target != companyNameInput && e.target.parentNode != companyAutocompleteList) {
+                    closeAllLists();
+                }
+            });
+
+            function updateDisplayedSequenceNumbers() {
+                const rows = dataTableBody.querySelectorAll('tr');
+                rows.forEach((row, index) => {
+                    row.cells[0].textContent = index + 1;
+                });
+                currentSequence = rows.length + 1;
+                sequenceInput.value = currentSequence;
+            }
+
+            function toggleBranchNumberInput() {
+                branchNumberInput.style.display = branchSubRadio.checked ? 'block' : 'none';
+                if (!branchSubRadio.checked) {
+                    branchNumberInput.value = '';
+                }
+            }
+
+            branchSubRadio.addEventListener('change', toggleBranchNumberInput);
+            branchHeadOfficeRadio.addEventListener('change', toggleBranchNumberInput);
+
+            const productPriceInput = document.getElementById('productPrice');
+            const vatAmountInput = document.getElementById('vatAmount');
+            const totalPriceInput = document.getElementById('totalPrice');
+            const vatRate = 0.07;
+
+            function calculateVAT() {
+                const price = parseFloat(productPriceInput.value) || 0;
+                const vat = parseFloat((price * vatRate).toFixed(2));
+                vatAmountInput.value = vat;
+                totalPriceInput.value = (price + vat).toFixed(2);
+            }
+
+            function calculateTotalFromVAT() {
+                 const vat = parseFloat(vatAmountInput.value) || 0;
+                 const price = parseFloat(productPriceInput.value) || 0;
+                 if (price > 0) {
+                     totalPriceInput.value = (price + vat).toFixed(2);
+                 } else if (vat > 0 && vatRate > 0) {
+                    const calculatedPrice = parseFloat((vat / vatRate).toFixed(2));
+                    productPriceInput.value = calculatedPrice;
+                    totalPriceInput.value = (calculatedPrice + vat).toFixed(2);
+                 } else {
+                    totalPriceInput.value = '';
+                 }
+            }
+
+            productPriceInput.addEventListener('input', calculateVAT);
+            vatAmountInput.addEventListener('input', calculateTotalFromVAT);
+
+            // Store the date when it's changed by the user
+            dateInput.addEventListener('change', function() {
+                lastSelectedDate = this.value;
+            });
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                // Store the current date before reset, if it's not already set by 'change' event
+                if (dateInput.value && !lastSelectedDate) {
+                    lastSelectedDate = dateInput.value;
+                } else if (!dateInput.value && lastSelectedDate) {
+                    // If date field is somehow empty but we have a lastSelectedDate, use it
+                    dateInput.value = lastSelectedDate;
+                } else if (dateInput.value) {
+                    // If date field has a value (possibly new), update lastSelectedDate
+                    lastSelectedDate = dateInput.value;
+                }
+
+
+                const formData = new FormData(form);
+                const companyNameValue = companyNameInput.value;
+                const companyTaxIdValue = taxIdInput.value;
+
+                const companyExists = companiesData.some(c => c.name === companyNameValue && c.taxId === companyTaxIdValue);
+                if (companyNameValue && !companyTaxIdValue && !companyExists) {
+                    alert("กรุณาเลือกบริษัทจากรายการค้นหา หรือตรวจสอบชื่อบริษัทให้ถูกต้อง");
+                    companyNameInput.focus();
+                    return;
+                }
+                if (companyNameValue && companyTaxIdValue && !companyExists) {
+                     console.warn("Company name and tax ID entered manually, not from autocomplete list.");
+                 }
+
+                const newRow = dataTableBody.insertRow();
+                newRow.insertCell().textContent = sequenceInput.value;
+                newRow.insertCell().textContent = formData.get('date'); // Date from form
+                newRow.insertCell().textContent = formData.get('documentNumber');
+                newRow.insertCell().textContent = companyNameValue;
+                newRow.insertCell().textContent = companyTaxIdValue;
+                newRow.insertCell().textContent = formData.get('branchType');
+                newRow.insertCell().textContent = formData.get('branchType') === 'สาขา' ? formData.get('branchNumber') : '-';
+                newRow.insertCell().textContent = parseFloat(formData.get('productPrice')).toFixed(2);
+                newRow.insertCell().textContent = parseFloat(formData.get('vatAmount')).toFixed(2);
+                newRow.insertCell().textContent = parseFloat(formData.get('totalPrice')).toFixed(2);
+
+                const actionsCell = newRow.insertCell();
+                actionsCell.classList.add('actions-column');
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'ลบ';
+                deleteButton.classList.add('delete-btn');
+                deleteButton.type = 'button';
+                deleteButton.addEventListener('click', function() {
+                    if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                        dataTableBody.removeChild(newRow);
+                        updateDisplayedSequenceNumbers();
+                    }
+                });
+                actionsCell.appendChild(deleteButton);
+
+                form.reset();
+                companyNameInput.value = '';
+                taxIdInput.value = '';
+                closeAllLists();
+
+                // Restore the last selected date after reset
+                if (lastSelectedDate) {
+                    dateInput.value = lastSelectedDate;
+                }
+
+                updateDisplayedSequenceNumbers();
+                toggleBranchNumberInput();
+                // Focus on the next logical field, e.g., documentNumber, as date is now "locked"
+                document.getElementById('documentNumber').focus();
+            });
+
+            form.addEventListener('reset', function() {
+                setTimeout(() => {
+                    companyNameInput.value = '';
+                    taxIdInput.value = '';
+                    closeAllLists();
+                    toggleBranchNumberInput();
+                    updateDisplayedSequenceNumbers();
+                    // Do not reset lastSelectedDate here, so it persists
+                    if (lastSelectedDate) {
+                        dateInput.value = lastSelectedDate;
+                    }
+                    document.getElementById('date').focus(); // Or documentNumber if date is locked
+                }, 0);
+            });
+
+            // Initialize
+            // Set a default date or fetch the last used date if applicable
+            // For now, if a date was previously selected and page reloaded (not a form reset),
+            // it would be lost. This logic focuses on locking after a submit.
+            // If you want to persist date across page loads, you'd use localStorage for lastSelectedDate.
+            if (dateInput.value) { // If there's an initial date (e.g. browser autofill)
+                lastSelectedDate = dateInput.value;
+            }
+
+            updateDisplayedSequenceNumbers();
+            toggleBranchNumberInput();
+            document.getElementById('date').focus();
+        });
+    </script>
+</body>
+</html>
