@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตารางข้อมูลพร้อมระบบอัตโนมัติ</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: sans-serif;
+            font-size: 0.9em; /* ปรับขนาดฟอนต์เล็กน้อยเพื่อให้พอดี */
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 6px; /* ลด padding เล็กน้อย */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        select, input[type="text"], input[type="number"], input[type="date"] {
+            width: 95%; /* ทำให้ input เต็มความกว้างเซลล์ */
+            padding: 4px;
+            box-sizing: border-box;
+        }
+        .total-amount-display, .vat-amount-display {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h2>ตารางบันทึกข้อมูล (พร้อมระบบอัตโนมัติ)</h2>
+
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>ลำดับที่</th>
+            <th>ชื่อผู้เสียภาษีอากร/ผู้ประกอบการ</th>
+            <th>รหัสผู้เสียภาษีอากร</th>
+            <th>ชื่อสถานประกอบการ/อาคาร</th>
+            <th>เลขที่</th>
+            <th>ตรอก/ซอย</th>
+            <th>ถนน</th>
+            <th>หมู่ที่</th>
+            <th>ตำบล/แขวง</th>
+            <th>อำเภอ/เขต</th>
+            <th>จังหวัด</th>
+            <th>รหัสไปรษณีย์</th>
+            <th>วัน/เดือน/ปี</th>
+            <th>ประเภทเงินได้</th>
+            <th>อัตราภาษี (%)</th>
+            <th>มูลค่าสินค้า/บริการ</th>
+            <th>ภาษีมูลค่าเพิ่ม</th>
+            <th>เงื่อนไขการหักภาษี</th>
+            <th>รวมเงิน</th>
+            <th>หมายเหตุ</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>
+                <select class="company-select">
+                    <option value="">-- เลือกบริษัท --</option>
+                    </select>
+            </td>
+            <td class="tax-id-display"></td>
+            <td class="establishment-name-display"></td>
+            <td class="number-display"></td>
+            <td class="soi-display"></td>
+            <td class="road-display"></td>
+            <td class="moo-display"></td>
+            <td class="subdistrict-display"></td>
+            <td class="district-display"></td>
+            <td class="province-display"></td>
+            <td class="postal-code-display"></td>
+            <td><input type="date" class="date-input"></td>
+            <td><input type="text" class="income-type-input" placeholder="เช่น ค่าบริการ"></td>
+            <td>
+                <select class="tax-rate-select">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="3" selected>3</option>
+                    <option value="5">5</option>
+                    <option value="7">7</option>
+                    <option value="10">10</option>
+                </select>
+            </td>
+            <td><input type="number" class="value-input" placeholder="0.00" step="0.01"></td>
+            <td class="vat-amount-display">0.00</td>
+            <td><input type="text" class="withholding-condition-input" placeholder="เช่น หัก ณ ที่จ่าย 3%"></td>
+            <td class="total-amount-display">0.00</td>
+            <td><input type="text" class="notes-input"></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>
+                <select class="company-select">
+                    <option value="">-- เลือกบริษัท --</option>
+                </select>
+            </td>
+            <td class="tax-id-display"></td>
+            <td class="establishment-name-display"></td>
+            <td class="number-display"></td>
+            <td class="soi-display"></td>
+            <td class="road-display"></td>
+            <td class="moo-display"></td>
+            <td class="subdistrict-display"></td>
+            <td class="district-display"></td>
+            <td class="province-display"></td>
+            <td class="postal-code-display"></td>
+            <td><input type="date" class="date-input"></td>
+            <td><input type="text" class="income-type-input"></td>
+            <td>
+                <select class="tax-rate-select">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="3" selected>3</option>
+                    <option value="5">5</option>
+                    <option value="7">7</option>
+                    <option value="10">10</option>
+                </select>
+            </td>
+            <td><input type="number" class="value-input" placeholder="0.00" step="0.01"></td>
+            <td class="vat-amount-display">0.00</td>
+            <td><input type="text" class="withholding-condition-input"></td>
+            <td class="total-amount-display">0.00</td>
+            <td><input type="text" class="notes-input"></td>
+        </tr>
+        </tbody>
+</table>
+
+<script>
+    // ข้อมูลบริษัท (ในตัวอย่างนี้ เราจะเก็บข้อมูลไว้ใน JavaScript โดยตรง)
+    // ในการใช้งานจริง ข้อมูลนี้ควรมาจากฐานข้อมูล
+    const companyDataStore = [
+        {
+            id: "companyA",
+            name: "บริษัท รักษาความปลอดภัย สยามการ์ด แอนด์ คลีนนิ่ง จำกัด",
+            taxId: "0603562007770",
+            establishmentName: "-", // ถ้าไม่มีใส่ "-" หรือค่าว่าง
+            number: "2",
+            soi: "ฉลองกรุง 14",
+            road: "ฉลองกรุง",
+            moo: "",
+            subdistrict: "ลำปลาทิว",
+            district: "ลาดกระบัง",
+            province: "กรุงเทพฯ",
+            postalCode: "10520"
+        },
+        {
+            id: "companyB",
+            name: "บริษัท พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาบางนา",
+            taxId: "0105532012207",
+            establishmentName: "อาคารบางนาทาวเวอร์ ตึกบี ชั้น 15",
+            number: "999/64",
+            soi: "",
+            road: "บางนา-ตราด", // สมมติ
+            moo: "หมู่ 1", // สมมติ
+            subdistrict: "บางแก้ว",
+            district: "บางพลี",
+            province: "สมุทรปราการ",
+            postalCode: "10540"
+        },
+        {
+            id: "companyC",
+            name: "บริษัท พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาพัฒนาการ",
+            taxId: "0105532012207", // เลขผู้เสียภาษีเดียวกันได้
+            establishmentName: "สำนักงานพัฒนาการ", // สมมติ
+            number: "17",
+            soi: "พัฒนาการ 69",
+            road: "พัฒนาการ",
+            moo: "",
+            subdistrict: "ประเวศ",
+            district: "ประเวศ",
+            province: "กรุงเทพฯ",
+            postalCode: "10250"
+        },
+        {
+            id: "companyD",
+            name: "บริษัท บี.กริม เพาเวอร์ จำกัด (มหาชน)",
+            taxId: "0105547021126",
+            establishmentName: "อาคาร ดร.เกฮาร์ด ลิงค์", // สมมติ
+            number: "5",
+            soi: "กรุงเทพกรีฑา 37 แยก 8",
+            road: "กรุงเทพกรีฑา",
+            moo: "",
+            subdistrict: "หัวหมาก",
+            district: "บางกะปิ",
+            province: "กรุงเทพฯ",
+            postalCode: "10240"
+        }
+    ];
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // เติมตัวเลือกบริษัทลงในทุก <select class="company-select">
+        const companySelects = document.querySelectorAll('.company-select');
+        companySelects.forEach(select => {
+            companyDataStore.forEach(company => {
+                const option = document.createElement('option');
+                option.value = company.id;
+                option.textContent = company.name;
+                select.appendChild(option);
+            });
+        });
+
+        // เพิ่ม Event Listener ให้กับตารางเพื่อจัดการการเปลี่ยนแปลงในแต่ละแถว
+        const dataTable = document.getElementById('dataTable');
+        dataTable.addEventListener('change', function (event) {
+            const target = event.target;
+            const currentRow = target.closest('tr');
+            if (!currentRow) return;
+
+            // 1. จัดการเมื่อเลือกบริษัท
+            if (target.classList.contains('company-select')) {
+                const selectedCompanyId = target.value;
+                const company = companyDataStore.find(c => c.id === selectedCompanyId);
+
+                currentRow.querySelector('.tax-id-display').textContent = company ? company.taxId : '';
+                currentRow.querySelector('.establishment-name-display').textContent = company ? company.establishmentName : '';
+                currentRow.querySelector('.number-display').textContent = company ? company.number : '';
+                currentRow.querySelector('.soi-display').textContent = company ? company.soi : '';
+                currentRow.querySelector('.road-display').textContent = company ? company.road : '';
+                currentRow.querySelector('.moo-display').textContent = company ? company.moo : '';
+                currentRow.querySelector('.subdistrict-display').textContent = company ? company.subdistrict : '';
+                currentRow.querySelector('.district-display').textContent = company ? company.district : '';
+                currentRow.querySelector('.province-display').textContent = company ? company.province : '';
+                currentRow.querySelector('.postal-code-display').textContent = company ? company.postalCode : '';
+            }
+
+            // 2. จัดการเมื่อมีการเปลี่ยนแปลงมูลค่าสินค้า/บริการ หรือ อัตราภาษี
+            if (target.classList.contains('value-input') || target.classList.contains('tax-rate-select')) {
+                updateTaxAndTotal(currentRow);
+            }
+        });
+
+        // สำหรับการกรอกข้อมูลมูลค่าสินค้า/บริการ ให้คำนวณใหม่ทันที
+        dataTable.addEventListener('input', function(event){
+            const target = event.target;
+            const currentRow = target.closest('tr');
+            if (!currentRow) return;
+
+            if (target.classList.contains('value-input')) {
+                 updateTaxAndTotal(currentRow);
+            }
+        });
+    });
+
+    function updateTaxAndTotal(row) {
+        const valueInput = row.querySelector('.value-input');
+        const taxRateSelect = row.querySelector('.tax-rate-select');
+        const vatAmountDisplay = row.querySelector('.vat-amount-display');
+        const totalAmountDisplay = row.querySelector('.total-amount-display');
+
+        const value = parseFloat(valueInput.value) || 0;
+        const taxRate = parseFloat(taxRateSelect.value) || 0;
+
+        const vatAmount = (value * taxRate) / 100;
+        const totalAmount = value + vatAmount;
+
+        vatAmountDisplay.textContent = vatAmount.toFixed(2);
+        totalAmountDisplay.textContent = totalAmount.toFixed(2);
+    }
+
+    // ฟังก์ชันตัวอย่างสำหรับเพิ่มแถวใหม่ (ถ้าต้องการ)
+    /*
+    function addNewRow() {
+        const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+        const newRow = tableBody.rows[0].cloneNode(true); // โคลนแถวแรก
+        
+        // ล้างข้อมูลในแถวใหม่
+        newRow.querySelector('.company-select').value = '';
+        newRow.querySelectorAll('td[class$="-display"]').forEach(td => td.textContent = '');
+        newRow.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]').forEach(input => input.value = '');
+        newRow.querySelector('.tax-rate-select').value = '3'; // ตั้งค่า default
+        newRow.querySelector('.value-input').value = '';
+        newRow.querySelector('.vat-amount-display').textContent = '0.00';
+        newRow.querySelector('.total-amount-display').textContent = '0.00';
+        
+        // อัปเดตลำดับที่
+        const rowCount = tableBody.rows.length;
+        newRow.cells[0].textContent = rowCount + 1;
+
+        tableBody.appendChild(newRow);
+
+        // หากต้องการให้ event listener ทำงานกับแถวใหม่ที่เพิ่มแบบไดนามิกโดยไม่ต้อง querySelectorAll ใหม่ทุกครั้ง
+        // การใช้ event delegation ที่ทำไว้บน `dataTable` จะครอบคลุมแถวใหม่โดยอัตโนมัติ
+    }
+    */
+
+</script>
+
+</body>
+</html>
