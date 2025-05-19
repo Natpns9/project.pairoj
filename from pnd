@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตารางข้อมูล (ระบุชื่อกิจการโดยตรง)</title>
+    <title>ตารางข้อมูล (ค้นหาชื่อกิจการได้)</title>
     <style>
         body { font-family: sans-serif; }
         table { border-collapse: collapse; width: 100%; font-size: 0.8em; }
@@ -21,7 +21,7 @@
 </head>
 <body>
 
-<h2>ตารางบันทึกข้อมูล (ระบุชื่อกิจการโดยตรง)</h2>
+<h2>ตารางบันทึกข้อมูล (ค้นหาชื่อกิจการได้)</h2>
 
 <button id="addRowBtn">เพิ่มแถวใหม่</button>
 <button id="exportCsvBtn">ส่งออกเป็น CSV (Excel)</button>
@@ -30,8 +30,8 @@
     <thead>
         <tr>
             <th>ลำดับที่</th>
-            <th>คำนำหน้า</th> {/* Dropdown: บริษัท, หจก., อื่นๆ */}
-            <th>ชื่อกิจการ (หลัก)</th> {/* Input: ชื่อกิจการไม่รวมคำนำหน้า */}
+            <th>คำนำหน้า</th>
+            <th>ชื่อกิจการ (หลัก)</th>
             <th>รหัสผู้เสียภาษีอากร</th>
             <th>ชื่อสถานประกอบการ/อาคาร</th>
             <th>เลขที่/หมู่ที่</th>
@@ -66,7 +66,7 @@
                     <option value="อื่นๆ">อื่นๆ</option>
                 </select>
             </td>
-            <td><input type="text" class="main-name-input" placeholder="กรอกชื่อกิจการ (ไม่รวมคำนำหน้า)"></td>
+            <td><input type="text" class="main-name-input" list="main-name-suggestions" placeholder="พิมพ์/เลือกชื่อกิจการหลัก"></td> {/* เพิ่ม list attribute */}
             <td class="tax-id-display"></td>
             <td class="establishment-name-display"></td>
             <td class="address-number-moo-display"></td>
@@ -91,24 +91,16 @@
         </tbody>
 </table>
 
+<datalist id="main-name-suggestions">
+    </datalist>
+
 <script>
-    const companyDataStore = [ // ไม่มี displayName แล้ว, ใช้ prefix และ mainName สำหรับ lookup
-        {
-            prefix: "บริษัท", mainName: "รักษาความปลอดภัย สยามการ์ด แอนด์ คลีนนิ่ง จำกัด", 
-            taxId: "0603562007770", establishmentName: "-", number: "2", soi: "ฉลองกรุง 14", road: "ฉลองกรุง", moo: "", subdistrict: "ลำปลาทิว", district: "ลาดกระบัง", province: "กรุงเทพฯ", postalCode: "10520"
-        },
-        {
-            prefix: "หจก.", mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง (สาขาบางนา)", 
-            taxId: "0105532012207", establishmentName: "อาคารบางนาทาวเวอร์ ตึกบี ชั้น 15", number: "999/64", soi: "", road: "บางนา-ตราด", moo: "1", subdistrict: "บางแก้ว", district: "บางพลี", province: "สมุทรปราการ", postalCode: "10540"
-        },
-        {
-            prefix: "บริษัท", mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาพัฒนาการ",
-            taxId: "0105532012207", establishmentName: "สำนักงานพัฒนาการ", number: "17", soi: "พัฒนาการ 69", road: "พัฒนาการ", moo: "", subdistrict: "ประเวศ", district: "ประเวศ", province: "กรุงเทพฯ", postalCode: "10250"
-        },
-        {
-            prefix: "ร้าน", mainName: "บี.กริม เพาเวอร์ เซอร์วิส",
-            taxId: "0105547021126", establishmentName: "อาคาร ดร.เกฮาร์ด ลิงค์", number: "5", soi: "กรุงเทพกรีฑา 37 แยก 8", road: "กรุงเทพกรีฑา", moo: "", subdistrict: "หัวหมาก", district: "บางกะปิ", province: "กรุงเทพฯ", postalCode: "10240"
-        }
+    const companyDataStore = [
+        { prefix: "บริษัท", mainName: "รักษาความปลอดภัย สยามการ์ด แอนด์ คลีนนิ่ง จำกัด", taxId: "0603562007770", establishmentName: "-", number: "2", soi: "ฉลองกรุง 14", road: "ฉลองกรุง", moo: "", subdistrict: "ลำปลาทิว", district: "ลาดกระบัง", province: "กรุงเทพฯ", postalCode: "10520" },
+        { prefix: "หจก.", mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง (สาขาบางนา)", taxId: "0105532012207", establishmentName: "อาคารบางนาทาวเวอร์ ตึกบี ชั้น 15", number: "999/64", soi: "", road: "บางนา-ตราด", moo: "1", subdistrict: "บางแก้ว", district: "บางพลี", province: "สมุทรปราการ", postalCode: "10540" },
+        { prefix: "บริษัท", mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาพัฒนาการ", taxId: "0105532012207", establishmentName: "สำนักงานพัฒนาการ", number: "17", soi: "พัฒนาการ 69", road: "พัฒนาการ", moo: "", subdistrict: "ประเวศ", district: "ประเวศ", province: "กรุงเทพฯ", postalCode: "10250" },
+        { prefix: "ร้าน", mainName: "บี.กริม เพาเวอร์ เซอร์วิส", taxId: "0105547021126", establishmentName: "อาคาร ดร.เกฮาร์ด ลิงค์", number: "5", soi: "กรุงเทพกรีฑา 37 แยก 8", road: "กรุงเทพกรีฑา", moo: "", subdistrict: "หัวหมาก", district: "บางกะปิ", province: "กรุงเทพฯ", postalCode: "10240" },
+        { prefix: "บริษัท", mainName: "ไทยยูเนี่ยน กรุ๊ป จำกัด (มหาชน)", taxId: "0107537000877", establishmentName: "อาคารเอสเอ็มทาวเวอร์", number: "979/12", soi: "", road: "พหลโยธิน", moo: "", subdistrict: "สามเสนใน", district: "พญาไท", province: "กรุงเทพฯ", postalCode: "10400" } // เพิ่มข้อมูลตัวอย่าง
     ];
 
     function getCurrentDateString() {
@@ -119,11 +111,31 @@
         return `${year}-${month}-${day}`;
     }
 
+    // *** ฟังก์ชันใหม่สำหรับเติม datalist ***
+    function populateMainNameDatalist() {
+        const datalist = document.getElementById('main-name-suggestions');
+        if (!datalist) return;
+        datalist.innerHTML = ''; // ล้าง option เก่า (ถ้ามี)
+
+        const uniqueMainNames = new Set(); // ใช้ Set เพื่อเก็บชื่อที่ไม่ซ้ำกัน
+        companyDataStore.forEach(company => {
+            if (company.mainName && company.mainName.trim() !== '') {
+                uniqueMainNames.add(company.mainName.trim());
+            }
+        });
+
+        uniqueMainNames.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            datalist.appendChild(option);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
-        initializeExistingRows(); // ไม่ต้อง populateCompanySelects แบบเดิมแล้ว
+        initializeExistingRows();
+        populateMainNameDatalist(); // *** เรียกฟังก์ชันเติม datalist ***
 
         const dataTable = document.getElementById('dataTable');
-        // Event listener สำหรับ lookup เมื่อมีการเปลี่ยนแปลงใน prefix หรือ main name
         dataTable.addEventListener('change', function(event) {
             const target = event.target;
             const currentRow = target.closest('tr');
@@ -134,15 +146,20 @@
             } else if (target.classList.contains('value-input') || target.classList.contains('tax-rate-select')) {
                 updateTax(currentRow);
             }
-            // ไม่ต้องมีเงื่อนไขสำหรับ company-select อีกต่อไป
         });
 
-        dataTable.addEventListener('input', function(event){
+        dataTable.addEventListener('input', function(event){ // ใช้ 'input' event สำหรับ main-name-input เพื่อให้ lookup ทันทีที่พิมพ์ได้ (ถ้าต้องการ)
             const target = event.target;
             const currentRow = target.closest('tr');
             if (!currentRow) return;
-            if (target.classList.contains('value-input')) { updateTax(currentRow); }
-            // อาจจะเพิ่ม event 'input' สำหรับ main-name-input ถ้าต้องการ lookup ทันทีที่พิมพ์ แต่ 'change' (เมื่อ blur) จะดีกว่าสำหรับ performance
+
+            if (target.classList.contains('value-input')) { 
+                updateTax(currentRow); 
+            } 
+            // ถ้าต้องการให้ lookup ทันทีที่พิมพ์ใน main-name-input (อาจจะทำให้ lookup บ่อย)
+            // else if (target.classList.contains('main-name-input')) {
+            //     lookupAndPopulateCompanyData(currentRow);
+            // }
         });
 
         document.getElementById('addRowBtn').addEventListener('click', addNewRow);
@@ -179,31 +196,43 @@
         const prefix = row.querySelector('.prefix-select').value;
         const mainName = row.querySelector('.main-name-input').value.trim();
 
-        if (!mainName) { // ถ้าชื่อหลักว่างเปล่า ให้ล้างข้อมูลที่เกี่ยวข้อง
+        if (!mainName && !prefix) { // ถ้าทั้ง prefix และ mainName ว่างเปล่า
             clearCompanySpecificFields(row);
             return;
         }
-
-        // ค้นหาใน companyDataStore (ตัวพิมพ์เล็กใหญ่ไม่สำคัญสำหรับ mainName)
-        const company = companyDataStore.find(c =>
-            c.prefix === prefix && c.mainName.toLowerCase() === mainName.toLowerCase()
-        );
+        
+        // ค้นหาโดยพิจารณาทั้ง prefix และ mainName (ถ้า prefix ถูกเลือก)
+        // หรือค้นหาด้วย mainName อย่างเดียวถ้า prefix ไม่ได้ถูกเลือก (เพื่อให้ยืดหยุ่น)
+        const company = companyDataStore.find(c => {
+            const mainNameMatch = c.mainName.toLowerCase() === mainName.toLowerCase();
+            if (prefix) { // ถ้ามีการเลือก prefix
+                return c.prefix === prefix && mainNameMatch;
+            }
+            return mainNameMatch; // ถ้าไม่ได้เลือก prefix ให้เทียบ mainName อย่างเดียว
+        });
 
         if (company) {
-            row.querySelector('.tax-id-display').textContent = company.taxId;
-            row.querySelector('.establishment-name-display').textContent = company.establishmentName;
-            let numberMooText = '';
-            if (company.number && company.number.trim() !== '') { numberMooText += company.number.trim(); }
-            if (company.moo && company.moo.trim() !== '') { numberMooText += (numberMooText ? ' ' : '') + 'หมู่ ' + company.moo.trim(); }
-            row.querySelector('.address-number-moo-display').textContent = numberMooText;
-            row.querySelector('.soi-display').textContent = company.soi;
-            row.querySelector('.road-display').textContent = company.road;
-            row.querySelector('.subdistrict-display').textContent = company.subdistrict;
-            row.querySelector('.district-display').textContent = company.district;
-            row.querySelector('.province-display').textContent = company.province;
-            row.querySelector('.postal-code-display').textContent = company.postalCode;
+            // ถ้าพบ company และ prefix ที่ผู้ใช้เลือกตรงกับข้อมูล (หรือผู้ใช้ไม่ได้เลือก prefix แต่ mainName ตรง)
+            if (!prefix || company.prefix === prefix) {
+                 row.querySelector('.prefix-select').value = company.prefix; // อัปเดต prefix select ให้ตรงกับข้อมูลที่พบ
+                 row.querySelector('.tax-id-display').textContent = company.taxId;
+                 row.querySelector('.establishment-name-display').textContent = company.establishmentName;
+                 let numberMooText = '';
+                 if (company.number && company.number.trim() !== '') { numberMooText += company.number.trim(); }
+                 if (company.moo && company.moo.trim() !== '') { numberMooText += (numberMooText ? ' ' : '') + 'หมู่ ' + company.moo.trim(); }
+                 row.querySelector('.address-number-moo-display').textContent = numberMooText;
+                 row.querySelector('.soi-display').textContent = company.soi;
+                 row.querySelector('.road-display').textContent = company.road;
+                 row.querySelector('.subdistrict-display').textContent = company.subdistrict;
+                 row.querySelector('.district-display').textContent = company.district;
+                 row.querySelector('.province-display').textContent = company.province;
+                 row.querySelector('.postal-code-display').textContent = company.postalCode;
+            } else {
+                // mainName ตรง แต่ prefix ที่ผู้ใช้เลือกไม่ตรงกับข้อมูลที่พบ -> อาจจะล้าง field หรือปล่อยให้ผู้ใช้แก้ไข prefix
+                 clearCompanySpecificFields(row);
+            }
         } else {
-            clearCompanySpecificFields(row); // หากไม่พบ ให้ล้างข้อมูล
+            clearCompanySpecificFields(row);
         }
     }
 
@@ -221,13 +250,14 @@
         const tableBody = document.getElementById('dataTable').querySelector('tbody');
         const firstRow = tableBody.querySelector('tr'); 
         let newRow;
+        const newRowNumber = tableBody.rows.length + 1;
 
-        if (!firstRow && tableBody.rows.length === 0) {
+        if (!firstRow) { // กรณี tbody ว่างเปล่าตอนแรก
             const tempRowHTML = `
                 <tr>
-                    <td class="row-number">1</td>
+                    <td class="row-number">${newRowNumber}</td>
                     <td><select class="prefix-select"><option value="">-- คำนำหน้า --</option><option value="บริษัท">บริษัท</option><option value="หจก.">หจก.</option><option value="หสน.">หสน.</option><option value="ร้าน">ร้าน</option><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="น.ส.">น.ส.</option><option value="อื่นๆ">อื่นๆ</option></select></td>
-                    <td><input type="text" class="main-name-input" placeholder="กรอกชื่อกิจการ (ไม่รวมคำนำหน้า)"></td>
+                    <td><input type="text" class="main-name-input" list="main-name-suggestions" placeholder="พิมพ์/เลือกชื่อกิจการหลัก"></td>
                     <td class="tax-id-display"></td><td class="establishment-name-display"></td><td class="address-number-moo-display"></td>
                     <td class="soi-display"></td><td class="road-display"></td><td class="subdistrict-display"></td>
                     <td class="district-display"></td><td class="province-display"></td><td class="postal-code-display"></td>
@@ -243,29 +273,20 @@
             newRow = tableBody.lastElementChild;
         } else {
             newRow = firstRow.cloneNode(true);
+            newRow.querySelector('.row-number').textContent = newRowNumber;
+            tableBody.appendChild(newRow);
         }
         
-        let newRowNumber = tableBody.rows.length;
-        if(firstRow && newRow !== firstRow) newRowNumber = tableBody.rows.length;
-        else if (!firstRow) newRowNumber = 1;
-        newRow.querySelector('.row-number').textContent = newRowNumber;
-
         // รีเซ็ตค่าในแถวใหม่
-        newRow.querySelector('.prefix-select').value = ''; // รีเซ็ตคำนำหน้า
-        newRow.querySelector('.main-name-input').value = ''; // ล้างชื่อกิจการหลัก
-        clearCompanySpecificFields(newRow); // ล้างข้อมูลที่ auto-populate
-        
-        newRow.querySelectorAll('.tax-id-display, .establishment-name-display, .address-number-moo-display, .soi-display, .road-display, .subdistrict-display, .district-display, .province-display, .postal-code-display, .vat-amount-display').forEach(td => td.textContent = '');
-        newRow.querySelector('.vat-amount-display').textContent = '0.00';
+        newRow.querySelector('.prefix-select').value = '';
+        newRow.querySelector('.main-name-input').value = '';
+        clearCompanySpecificFields(newRow); 
         
         newRow.querySelectorAll('input[type="text"].income-type-input, input[type="number"].value-input, input[type="text"].notes-input').forEach(input => input.value = '');
         newRow.querySelector('.date-input').value = getCurrentDateString(); 
         newRow.querySelector('.tax-rate-select').value = '3'; 
         newRow.querySelector('.withholding-condition-input').value = '1';
-        
-        if(firstRow && newRow !== firstRow) {
-            tableBody.appendChild(newRow);
-        }
+        newRow.querySelector('.vat-amount-display').textContent = '0.00'; // Clear VAT display too
     }
 
     function escapeCsvCell(cellData) {
@@ -286,12 +307,12 @@
                 let cellText = '';
                 if (row.parentNode.nodeName === 'TBODY') { 
                     const prefixSelect = col.querySelector('select.prefix-select');
-                    const mainNameInput = col.querySelector('input.main-name-input'); // *** เปลี่ยนเป็น main-name-input ***
-                    const inputField = col.querySelector('input[type="text"]:not(.main-name-input), input[type="number"], input[type="date"]'); // ไม่รวม main-name-input ที่จัดการแยกไปแล้ว
+                    const mainNameInput = col.querySelector('input.main-name-input');
+                    const inputField = col.querySelector('input[type="text"]:not(.main-name-input), input[type="number"], input[type="date"]');
                     const taxRateSelect = col.querySelector('select.tax-rate-select');
 
                     if (prefixSelect) { cellText = prefixSelect.value; } 
-                    else if (mainNameInput) { cellText = mainNameInput.value; } // *** ดึงค่าจาก main-name-input ***
+                    else if (mainNameInput) { cellText = mainNameInput.value; } 
                     else if (taxRateSelect) { cellText = taxRateSelect.value; } 
                     else if (inputField) { cellText = inputField.value; } 
                     else { cellText = col.textContent.trim(); }
