@@ -53,6 +53,8 @@
 <h2>ตารางบันทึกข้อมูล (ปรับปรุงล่าสุด)</h2>
 
 <button id="addRowBtn">เพิ่มแถวใหม่</button>
+<button id="addRowBtn">เพิ่มแถวใหม่</button>
+<button id="exportCsvBtn">ส่งออกเป็น CSV (Excel)</button>
 
 <table id="dataTable">
     <thead>
@@ -304,7 +306,80 @@
         newRow.querySelector('.vat-amount-display').textContent = '0.00';
         newRow.querySelector('.withholding-condition-input').value = '1'; // ค่าเริ่มต้น
         newRow.querySelector('.notes-input').value = '';
-        
+
+        // ... (โค้ด JavaScript เดิม) ...
+
+document.addEventListener('DOMContentLoaded', function () {
+    // ... (โค้ด DOMContentLoaded เดิม) ...
+    document.getElementById('exportCsvBtn').addEventListener('click', function() {
+        exportTableToCSV('ข้อมูลตาราง.csv');
+    });
+});
+
+function escapeCsvCell(cellData) {
+    if (cellData === null || cellData === undefined) {
+        return '';
+    }
+    cellData = String(cellData);
+    // Escape double quotes by doubling them
+    cellData = cellData.replace(/"/g, '""');
+    // If the cell contains a comma, newline, or double quote, wrap it in double quotes
+    if (cellData.search(/("|,|\n)/g) >= 0) {
+        cellData = `"${cellData}"`;
+    }
+    return cellData;
+}
+
+function exportTableToCSV(filename) {
+    let csvContent = "\uFEFF"; // BOM for UTF-8 to help Excel with Thai characters
+    const table = document.getElementById('dataTable');
+    const rows = table.querySelectorAll('tr');
+
+    rows.forEach(row => {
+        const rowData = [];
+        const cols = row.querySelectorAll('th, td');
+
+        cols.forEach(col => {
+            let cellText = '';
+            if (row.parentNode.nodeName === 'TBODY') { // Data row
+                const companySelect = col.querySelector('select.company-select');
+                const inputField = col.querySelector('input[type="text"], input[type="number"], input[type="date"]');
+                const taxRateSelect = col.querySelector('select.tax-rate-select');
+                const withholdingInput = col.querySelector('input.withholding-condition-input'); // specific class
+
+                if (companySelect) {
+                    cellText = companySelect.selectedIndex > 0 ? companySelect.selectedOptions[0].text : '';
+                } else if (inputField) {
+                    cellText = inputField.value;
+                } else if (taxRateSelect) {
+                    cellText = taxRateSelect.value; // Exports the value, e.g., "3" for 3%
+                } else if(withholdingInput){
+                    cellText = withholdingInput.value;
+                }
+                 else { // For td elements that display data directly (like .tax-id-display, .vat-amount-display, .row-number)
+                    cellText = col.textContent.trim();
+                }
+            } else { // Header row
+                cellText = col.textContent.trim();
+            }
+            rowData.push(escapeCsvCell(cellText));
+        });
+        csvContent += rowData.join(',') + '\r\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) { // Feature detection
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+}
         tableBody.appendChild(newRow);
         // Event listeners ที่ผูกกับ table (event delegation) จะทำงานกับแถวใหม่โดยอัตโนมัติ
     }
