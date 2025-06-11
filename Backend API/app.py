@@ -1,53 +1,54 @@
+# app.py (แก้ไขสำหรับกรณีไม่มีข้อมูลสาขา)
 from flask import Flask, jsonify
+from flask_cors import CORS
 import pyodbc
 
-# --- ส่วนของการตั้งค่า Flask ---
 app = Flask(__name__)
+CORS(app)
 
-# --- ส่วนของการตั้งค่าการเชื่อมต่อฐานข้อมูล (เหมือนเดิม) ---
 SERVER_NAME = 'PairojS2'
 DATABASE_NAME = 'SSalakDB'
 USERNAME = 'sa'
 PASSWORD = 'Abc1234'
-TABLE_NAME = 'dbo.SClient' # <--- !!! แก้เป็นชื่อตารางที่เก็บข้อมูลบริษัท
+TABLE_NAME = 'dbo.SClient'
 
-connection_string = (
-    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-    f"SERVER={SERVER_NAME};"
-    f"DATABASE={DATABASE_NAME};"
-    f"UID={USERNAME};"
-    f"PWD={PASSWORD};"
-)
+# --- ใช้ชื่อคอลัมน์ที่เราค้นพบ ---
+TABLE_NAME = 'dbo.SClient' 
+COL_CNAME = 'Cname'
+COL_TAXID = 'Taxid'
+COL_BRANCH_TYPE = 'Abbre' # <-- แก้ไขเป็นชื่อที่ถูกต้อง
+COL_BRANCH_NO = 'Pkey'  # <-- แก้ไขเป็นชื่อที่ถูกต้อง
+
+connection_string = (f"DRIVER={{ODBC Driver 17 for SQL Server}};" f"SERVER={SERVER_NAME};" f"DATABASE={DATABASE_NAME};" f"UID={USERNAME};" f"PWD={PASSWORD};")
 
 def get_companies_from_db():
-    """ฟังก์ชันสำหรับดึงข้อมูลบริษัทจากฐานข้อมูล"""
     companies = []
     try:
         cnxn = pyodbc.connect(connection_string)
-        print("✅ (Backend) เชื่อมต่อฐานข้อมูลสำเร็จ!") 
         cursor = cnxn.cursor()
-        # !!! แก้ชื่อคอลัมน์ CompanyName, TaxID ให้ตรงกับในตารางของพี่ก้อ
-        query = f"SELECT Taxid, CName, TrCName FROM {TABLE_NAME}"
+
+        # --- แก้ไข Query ให้ดึงเฉพาะคอลัมน์ที่มีอยู่จริง ---
+        query = f"SELECT {COL_CNAME}, {COL_TAXID} FROM {TABLE_NAME}"
         cursor.execute(query)
         rows = cursor.fetchall()
+
         for row in rows:
-            companies.append({"CompanyName": row.CompanyName, "TaxID": row.TaxID})
+            companies.append({
+                "CompanyName": getattr(row, COL_CNAME, ''),
+                "TaxID": getattr(row, COL_TAXID, ''),
+                # --- ส่งค่า default สำหรับข้อมูลสาขาไปแทน ---
+                "BranchType": "สำนักงานใหญ่", 
+                "BranchNo": ""
+            })
         cnxn.close()
-               # --- บรรทัดที่เพิ่มเข้ามา เพื่อบอกว่าดึงข้อมูลมาได้กี่รายการ ---
         print(f"✅ (Backend) ดึงข้อมูลบริษัทมาได้ {len(companies)} รายการ")
-    except pyodbc.Error as ex:
-        # --- บรรทัดเดิมที่มีอยู่แล้ว เราแค่เติม (Backend) เข้าไปให้ชัดเจน ---
-        print(f"❌ (Backend) เชื่อมต่อฐานข้อมูลล้มเหลว: {ex}")
+    except Exception as e:
+        print(f"❌ (Backend) เกิดข้อผิดพลาด: {e}")
     return companies
 
-# --- สร้าง API Endpoint ---
 @app.route('/api/companies')
 def get_companies():
-    """นี่คือ 'ท่อส่งข้อมูล' ของเรา"""
-    company_data = get_companies_from_db()
-    return jsonify(company_data)
+    return jsonify(get_companies_from_db())
 
-# --- ส่วนสำหรับรันโปรแกรม ---
 if __name__ == '__main__':
-    # debug=True ทำให้เซิร์ฟเวอร์รีสตาร์ทเองเมื่อเราแก้ไขโค้ด
     app.run(debug=True)
