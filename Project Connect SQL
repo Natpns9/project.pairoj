@@ -1,0 +1,169 @@
+ขัั้นตอนการเชื่อมต่อ ถังข้อมูล SQL กับหน้าบ้านเพื่อสร้าง Auto Complete
+
+โหลดข้อมูลล่วงหน้า (Caching): เมื่อเปิดหน้าเว็บ เราจะดึงรายชื่อบริษัทและเลขภาษีทั้งหมดจาก SQL Server มาเก็บไว้ในหน่วยความจำของหน้าเว็บก่อน
+ค้นหาอัจฉริยะ (Autocomplete): ที่ช่อง "ชื่อบริษัท" และ "เลขภาษี" เมื่อผู้ใช้เริ่มพิมพ์แค่บางส่วน ระบบจะแสดงรายชื่อที่ตรงกันขึ้นมาให้เลือกทันที
+เติมข้อมูลอัตโนมัติ (Autofill): เมื่อผู้ใช้คลิกเลือกบริษัทจากในลิสต์ ชื่อเต็มและเลขภาษีจะถูกเติมลงในช่องฟอร์มให้โดยอัตโนมัติ
+เพื่อให้ทั้งหมดนี้เกิดขึ้นได้ เราต้องทำงาน 2 ส่วนควบคู่กันไปค่ะ คือ ส่วนหลังบ้าน (Backend) ที่ทำหน้าที่ส่งข้อมูล และ ส่วนหน้าบ้าน (Frontend) ที่ทำหน้าที่รับและแสดงข้อมูลค่ะ
+
+## ขั้นตอนที่ 1: สร้าง "ท่อส่งข้อมูล" จากหลังบ้าน (Backend API)
+เราจะใช้ Python สร้างโปรแกรมเล็กๆ ที่ทำหน้าที่เป็นเหมือน "พนักงานส่งของ" คอยรับคำสั่งแล้วไปหยิบข้อมูลจาก SQL Server มาส่งให้หน้าเว็บของเราค่ะ เราจะใช้เครื่องมือที่ชื่อว่า Flask ซึ่งเป็น Framework ที่เล็กและใช้ง่ายมากๆ ค่ะ
+
+1.1 ติดตั้ง Flask
+เปิด Terminal ใน VS Code แล้วรันคำสั่งนี้ค่ะ:
+
+Bash
+
+pip install Flask
+1.2 สร้างไฟล์ app.py
+สร้างไฟล์ใหม่ชื่อ app.py แล้วนำโค้ดนี้ไปวางค่ะ โค้ดนี้จะสร้าง API ที่เมื่อมีคนเข้ามาที่ URL /api/companies มันจะไปดึงข้อมูลบริษัททั้งหมดจาก SQL มาส่งกลับไปให้
+
+คำแนะนำ: พี่ก้อต้องแก้ข้อมูล SERVER_NAME, DATABASE_NAME ฯลฯ และ YourCompanyTableName ให้ถูกต้องนะคะ
+
+Python
+
+from flask import Flask, jsonify
+import pyodbc
+
+# --- ส่วนของการตั้งค่า Flask ---
+app = Flask(__name__)
+
+# --- ส่วนของการตั้งค่าการเชื่อมต่อฐานข้อมูล (เหมือนเดิม) ---
+SERVER_NAME = 'PairojS2'
+DATABASE_NAME = 'SSalakDB'
+USERNAME = 'sa'
+PASSWORD = 'Abc1234'
+TABLE_NAME = 'YourCompanyTableName' # <--- !!! แก้เป็นชื่อตารางที่เก็บข้อมูลบริษัท
+
+connection_string = (
+    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+    f"SERVER={SERVER_NAME};"
+    f"DATABASE={DATABASE_NAME};"
+    f"UID={USERNAME};"
+    f"PWD={PASSWORD};"
+)
+
+def get_companies_from_db():
+    """ฟังก์ชันสำหรับดึงข้อมูลบริษัทจากฐานข้อมูล"""
+    companies = []
+    try:
+        cnxn = pyodbc.connect(connection_string)
+        cursor = cnxn.cursor()
+        # !!! แก้ชื่อคอลัมน์ CompanyName, TaxID ให้ตรงกับในตารางของพี่ก้อ
+        query = f"SELECT CompanyName, TaxID FROM {TABLE_NAME}"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        for row in rows:
+            companies.append({"CompanyName": row.CompanyName, "TaxID": row.TaxID})
+        cnxn.close()
+    except pyodbc.Error as ex:
+        print(f"Database Error: {ex}")
+    return companies
+
+# --- สร้าง API Endpoint ---
+@app.route('/api/companies')
+def get_companies():
+    """นี่คือ 'ท่อส่งข้อมูล' ของเรา"""
+    company_data = get_companies_from_db()
+    return jsonify(company_data)
+
+# --- ส่วนสำหรับรันโปรแกรม ---
+if __name__ == '__main__':
+    # debug=True ทำให้เซิร์ฟเวอร์รีสตาร์ทเองเมื่อเราแก้ไขโค้ด
+    app.run(debug=True)
+1.3 สตาร์ท Backend
+ใน Terminal ให้รันคำสั่ง python app.py ค่ะ ถ้าไม่มีอะไรผิดพลาด พี่ก้อจะเห็นข้อความว่าเซิร์ฟเวอร์กำลังทำงานอยู่ ซึ่งหมายความว่า "ท่อส่งข้อมูล" ของเราพร้อมแล้ว!
+
+## ขั้นตอนที่ 2: ปรับปรุงหน้าบ้าน (Frontend) ให้ค้นหาได้
+ตอนนี้เราจะกลับไปที่ไฟล์ HTML ของพี่ก้อ เพื่อเพิ่มความสามารถในการดึงข้อมูลจาก "ท่อ" ที่เราสร้างไว้ และทำระบบ Autocomplete ค่ะ
+
+2.1 เพิ่ม JavaScript ในไฟล์ HTML ของพี่ก้อ
+ให้พี่ก้อนำโค้ด JavaScript ที่มีอยู่เดิมออกก่อน แล้วแทนที่ด้วยโค้ดชุดใหม่นี้ทั้งหมดในแท็ก <script> นะคะ
+
+JavaScript
+
+// โค้ด JavaScript ทั้งหมดที่อยู่ในไฟล์ fromme (HTML).txt เดิม
+// ให้ลบออกแล้วใช้โค้ดด้านล่างนี้แทน
+
+document.addEventListener('DOMContentLoaded', function () {
+    // --- การตั้งค่าพื้นฐาน (เหมือนเดิม) ---
+    const form = document.getElementById('taxDataForm');
+    const dataTableBody = document.querySelector('#taxDataTable tbody');
+    const branchSubRadio = document.getElementById('branchSub');
+    const branchHeadOfficeRadio = document.getElementById('branchHeadOffice');
+    const branchNumberInput = document.getElementById('branchNumber');
+    const sequenceInput = document.getElementById('sequence');
+    const companyNameInput = document.getElementById('companyName'); // <-- เพิ่มมา
+    const taxIdInput = document.getElementById('taxId'); // <-- เพิ่มมา
+
+    let companyCache = []; // <-- ตัวแปรสำหรับเก็บข้อมูลบริษัท (Caching)
+
+    // --- ฟังก์ชันพื้นฐาน (เหมือนเดิม) ---
+    // (จี้ย่อไว้เพื่อไม่ให้ยาวเกินไป แต่พี่ก้อต้องเอาฟังก์ชันเดิมมาใส่ไว้นะคะ)
+    // function updateDisplayedSequenceNumbers() { ... }
+    // function toggleBranchNumberInput() { ... }
+    // function calculateVAT() { ... }
+    // function calculateTotalFromVAT() { ... }
+
+    // --- ส่วนใหม่: ดึงข้อมูลบริษัทเมื่อเปิดหน้าเว็บ ---
+    async function fetchCompanyData() {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/companies');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            companyCache = await response.json();
+            console.log('โหลดข้อมูลบริษัทสำเร็จ:', companyCache);
+            initializeAutocomplete(); // เรียกใช้ Autocomplete หลังโหลดข้อมูลเสร็จ
+        } catch (error) {
+            console.error('ไม่สามารถโหลดข้อมูลบริษัทได้:', error);
+            // อาจจะแสดงข้อความแจ้งเตือนผู้ใช้ที่หน้าเว็บ
+        }
+    }
+
+    // --- ส่วนใหม่: ตั้งค่าระบบค้นหา Autocomplete ---
+    function initializeAutocomplete() {
+        // ในที่นี้จะใช้ไลบรารีง่ายๆ อย่าง Awesomplete
+        // ให้พี่ก้อเพิ่ม <link> และ <script> ของ Awesomplete ใน <head> ด้วยนะคะ
+        // <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
+        // <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js" async></script>
+        
+        const companyList = companyCache.map(c => ({ label: `${c.CompanyName} (${c.TaxID})`, value: c.CompanyName, taxId: c.TaxID }));
+        
+        const awesomplete = new Awesomplete(companyNameInput, {
+            list: companyList,
+            minChars: 1, // เริ่มค้นหาเมื่อพิมพ์อย่างน้อย 1 ตัวอักษร
+            maxItems: 10, // แสดงผลลัพธ์สูงสุด 10 รายการ
+            autoFirst: true // เลือกรายการแรกให้อัตโนมัติ
+        });
+        
+        // --- ส่วนใหม่: เมื่อผู้ใช้เลือกบริษัทจากลิสต์ ---
+        companyNameInput.addEventListener('awesomplete-selectcomplete', function(event) {
+            const selected = event.text; // `event.text` คือ object ที่เราเลือก
+            companyNameInput.value = selected.value; // เติมชื่อบริษัท
+            taxIdInput.value = selected.taxId; // เติมเลขภาษี
+        });
+    }
+
+
+    // --- จัดการฟอร์ม (เหมือนเดิม) ---
+    form.addEventListener('submit', function (event) {
+        // โค้ดเดิมของพี่ก้อ...
+    });
+    
+    // --- เริ่มการทำงาน ---
+    fetchCompanyData(); // <-- เริ่มต้นด้วยการดึงข้อมูลบริษัท
+    // โค้ด Initialize อื่นๆ ของพี่ก้อ (เหมือนเดิม)
+});
+
+สิ่งสำคัญที่ต้องทำในไฟล์ HTML:
+เพื่อให้ระบบ Autocomplete ทำงานได้ ให้พี่ก้อเพิ่ม 2 บรรทัดนี้เข้าไปในส่วน <head> ของไฟล์ HTML ค่ะ
+
+HTML
+
+<head>
+    ...
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js" async></script>
+    ...
+</head>
+เมื่อทำครบทุกขั้นตอนแล้ว พี่ก้อจะเห็นว่าเมื่อเริ่มพิมพ์ในช่อง "ชื่อบริษัท" จะมีรายชื่อบริษัทจากฐานข้อมูลแสดงขึ้นมาให้เลือก และเมื่อเลือกแล้ว เลขภาษีก็จะถูกเติมให้ทันทีเลยค่ะ! ลองดูนะคะ ถ้าติดตรงไหนถามจี้ได้เลยค่ะ!
