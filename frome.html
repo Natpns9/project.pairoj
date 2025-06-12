@@ -7,15 +7,14 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js" async></script>
-
+    
     <style>
-        /* CSS Reset and Basic Styling */
+        /* CSS เดิมทั้งหมดของคุณ */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; font-family: 'Tahoma', 'Sarabun', sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; }
         body { display: flex; flex-direction: column; padding: 10px; }
         .container { width: 100%; max-width: 100%; flex-grow: 1; display: flex; flex-direction: column; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow-y: auto; }
         h1, h2 { color: #2c3e50; text-align: center; margin-bottom: 20px; }
-        /* Form Styling */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { margin-bottom: 6px; font-weight: bold; color: #555; }
@@ -25,7 +24,6 @@
         .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; width: 100%; }
         .branch-options { display: flex; align-items: center; flex-wrap: wrap; }
         .branch-options label { margin-right: 10px; margin-bottom: 0; font-weight: normal; }
-        /* Buttons and Actions */
         .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .form-actions button, .delete-btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; color: white; transition: background-color 0.3s ease; }
         .form-actions button[type="submit"] { background-color: #5cb85c; }
@@ -34,7 +32,6 @@
         .form-actions button[type="reset"]:hover { background-color: #ec971f; }
         .delete-btn { background-color: #d9534f; padding: 5px 10px; font-size: 0.8em; }
         .delete-btn:hover { background-color: #c9302c; }
-        /* Data Table Styling */
         .data-table-container { margin-top: 25px; overflow-x: auto; flex-grow: 1; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th, .data-table td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.85em; }
@@ -43,12 +40,26 @@
         .data-table thead, .data-table tbody tr { display: table; width: 100%; table-layout: fixed; }
         .data-table tr:nth-child(even) { background-color: #f8f9fa; }
         .data-table .actions-column { width: 80px; text-align: center; }
+        
+        /* CSS พิเศษสำหรับแก้ไขปัญหา Awesomplete ไม่แสดงผล */
+        .form-group {
+            position: relative; 
+        }
+        div.awesomplete > ul {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 2px;
+            width: 100%;
+            z-index: 9999; 
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>แบบฟอร์มบันทึกข้อมูลภาษี</h1>
-        
+
         <form id="taxDataForm">
             <div class="form-grid">
                 <div class="form-group"><label for="sequence">ลำดับ (No.):</label><input type="number" id="sequence" name="sequence" readonly></div>
@@ -90,11 +101,8 @@
             </table>
         </div>
     </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("✅ 1. Script started! Event DOMContentLoaded fired.");
-
     // --- ELEMENT SELECTORS ---
     const taxDataForm = document.getElementById('taxDataForm');
     const dataTableBody = document.querySelector('#taxDataTable tbody');
@@ -108,76 +116,85 @@ document.addEventListener('DOMContentLoaded', function () {
     const vatAmountInput = document.getElementById('vatAmount');
     const totalPriceInput = document.getElementById('totalPrice');
 
-    // ตรวจสอบว่าหา Element เจอทั้งหมดหรือไม่
-    if (!taxDataForm || !companyNameInput || !taxIdInput) {
-        console.error("❌ ERROR: ไม่พบ Element สำคัญในหน้า HTML! กรุณาตรวจสอบ ID ของ Form และ Input");
-        return; // หยุดการทำงานถ้าหา Element ไม่เจอ
-    }
-    console.log("✅ 2. All elements selected successfully.");
-
     let companyCache = [];
     let currentSequence = 1;
 
     async function fetchCompanyData() {
-        console.log("✅ 4. Inside fetchCompanyData(), trying to fetch...");
         try {
             const response = await fetch('http://127.0.0.1:5000/api/companies');
-            if (!response.ok) throw new Error('ไม่สามารถโหลดข้อมูลบริษัทได้ (Network response was not ok)');
-
-            console.log("✅ 5. Fetch successful! Parsing JSON...");
+            if (!response.ok) throw new Error('ไม่สามารถโหลดข้อมูลบริษัทได้');
             companyCache = await response.json();
-
-            console.log('✅ 6. JSON parsed! Company data received:', companyCache);
             initializeAutocomplete();
         } catch (error) {
-            console.error("❌ ERROR during fetch:", error);
-            companyNameInput.placeholder = "ผิดพลาด: ไม่สามารถโหลดข้อมูลบริษัทได้";
+            console.error("เกิดข้อผิดพลาดตอน Fetch:", error);
+            companyNameInput.placeholder = "ผิดพลาด: ไม่สามารถโหลดข้อมูลได้";
         }
     }
 
     function initializeAutocomplete() {
-        console.log("✅ 7. Initializing Autocomplete...");
+        // เตรียมข้อมูลให้ Awesomplete (เหมือนเดิม)
         const companyList = companyCache.map(c => ({
-            label: `<span class="math-inline">\{c\.CompanyName\} \(</span>{c.TaxID})`,
-            value: c.CompanyName,
-            data: c
+            label: `${c.CompanyName} (${c.TaxID})`,
+            value: c.CompanyName // 'value' คือสิ่งที่จะถูกส่งกลับมาตอนเลือก
         }));
 
-        const awesomplete = new Awesomplete(companyNameInput, {
+        new Awesomplete(companyNameInput, {
             list: companyList,
             minChars: 1,
             maxItems: 10,
             filter: function(text, input) {
                 return Awesomplete.FILTER_CONTAINS(text, input.match(/[^,]*$/)[0]);
-            }
+            },
+            sort: false
         });
 
+        // ===================================================================
+        // === โค้ดส่วนเติมข้อมูลอัตโนมัติ (ฉบับแก้ไขที่ถูกต้อง) ===
+        // ===================================================================
         companyNameInput.addEventListener('awesomplete-selectcomplete', function(event) {
-            const selectedData = event.text.data;
-            companyNameInput.value = selectedData.CompanyName;
-            taxIdInput.value = selectedData.TaxID;
-            if (selectedData.BranchType === 'สาขา') {
-                branchSubRadio.checked = true;
-                branchNumberInput.value = selectedData.BranchNo || '';
-            } else {
-                branchHeadOfficeRadio.checked = true;
-                branchNumberInput.value = '';
+            // 1. รับ "ชื่อบริษัท" (ที่เป็น string) ที่ผู้ใช้เลือกจาก event
+            const selectedCompanyName = event.text.value;
+
+            // 2. นำชื่อที่ได้ไปค้นหาข้อมูลทั้งหมดจาก `companyCache` ของเรา
+            const selectedCompanyObject = companyCache.find(
+                company => company.CompanyName === selectedCompanyName
+            );
+
+            // 3. ตรวจสอบว่าหาข้อมูลเจอหรือไม่
+            if (selectedCompanyObject) {
+                // 4. ถ้าเจอ ให้นำข้อมูลจาก Object ที่พบมาเติมในฟอร์ม
+                taxIdInput.value = selectedCompanyObject.TaxID;
+
+                if (selectedCompanyObject.BranchType && selectedCompanyObject.BranchType.includes('สาขา')) {
+                    branchSubRadio.checked = true;
+                    branchNumberInput.value = selectedCompanyObject.BranchNo || '';
+                } else {
+                    branchHeadOfficeRadio.checked = true;
+                    branchNumberInput.value = '';
+                }
+                toggleBranchNumberInput();
             }
-            toggleBranchNumberInput();
         });
-        console.log("✅ 8. Autocomplete setup complete!");
     }
+    
+    // (โค้ดส่วนที่เหลือของคุณทั้งหมดให้คงไว้เหมือนเดิม)
+    function updateSequence() { const rowCount = dataTableBody.rows.length; currentSequence = rowCount + 1; sequenceInput.value = currentSequence; const rows = dataTableBody.querySelectorAll('tr'); rows.forEach((row, index) => { row.cells[0].textContent = index + 1; }); }
+    function toggleBranchNumberInput() { branchNumberInput.style.display = branchSubRadio.checked ? 'block' : 'none'; if (!branchSubRadio.checked) branchNumberInput.value = ''; }
+    branchSubRadio.addEventListener('change', toggleBranchNumberInput); branchHeadOfficeRadio.addEventListener('change', toggleBranchNumberInput);
+    const vatRate = 0.07;
+    function calculateFromPrice() { const price = parseFloat(productPriceInput.value) || 0; const vat = parseFloat((price * vatRate).toFixed(2)); vatAmountInput.value = vat; totalPriceInput.value = (price + vat).toFixed(2); }
+    function calculateFromVAT() { const vat = parseFloat(vatAmountInput.value) || 0; const price = parseFloat(productPriceInput.value) || 0; if (price > 0) { totalPriceInput.value = (price + vat).toFixed(2); } else if (vat > 0 && vatRate > 0) { const calculatedPrice = parseFloat((vat / vatRate).toFixed(2)); productPriceInput.value = calculatedPrice; totalPriceInput.value = (calculatedPrice + vat).toFixed(2); } }
+    productPriceInput.addEventListener('input', calculateFromPrice); vatAmountInput.addEventListener('input', calculateFromVAT);
+    taxDataForm.addEventListener('submit', function (event) { event.preventDefault(); const data = new FormData(taxDataForm); const newRow = dataTableBody.insertRow(); newRow.innerHTML = `<td>${currentSequence}</td><td>${data.get('date')}</td><td>${data.get('documentNumber')}</td><td>${data.get('companyName')}</td><td>${data.get('taxId')}</td><td>${data.get('branchType')}</td><td>${data.get('branchType') === 'สาขา' ? data.get('branchNumber') : '-'}</td><td>${parseFloat(data.get('productPrice')).toFixed(2)}</td><td>${parseFloat(data.get('vatAmount')).toFixed(2)}</td><td>${parseFloat(data.get('totalPrice')).toFixed(2)}</td><td class="actions-column"><button type="button" class="delete-btn">ลบ</button></td>`; newRow.querySelector('.delete-btn').addEventListener('click', function() { if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) { newRow.remove(); updateSequence(); } }); taxDataForm.reset(); updateSequence(); toggleBranchNumberInput(); document.getElementById('date').focus(); });
+    taxDataForm.addEventListener('reset', function() { setTimeout(() => { toggleBranchNumberInput(); updateSequence(); }, 0); });
 
-    // --- โค้ดส่วนที่เหลือ (เหมือนเดิม) ---
-    function updateSequence() { /* ... โค้ดเดิม ... */ }
-    function toggleBranchNumberInput() { /* ... โค้ดเดิม ... */ }
-    // ... โค้ดส่วนอื่นๆ ทั้งหมด ...
-
-    // --- INITIALIZATION ---
-    console.log("✅ 3. Calling fetchCompanyData()...");
+    // --- เริ่มการทำงานทั้งหมด ---
     fetchCompanyData(); 
     updateSequence();
     toggleBranchNumberInput();
     document.getElementById('date').focus();
 });
 </script>
+
+</body>
+</html>
