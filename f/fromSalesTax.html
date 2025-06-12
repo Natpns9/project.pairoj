@@ -65,8 +65,8 @@
 </head>
 <body>
 
-    <button id="backFloatingBtn" class="floating-btn">⬅️ กลับ</button>
-    <button id="historyFloatingBtn" class="floating-btn">history</button>
+    <button id="backFloatingBtn" class="floating-btn">back</button>
+    <button id="historyFloatingBtn" class="floating-btn">History</button>
     <button id="saveFloatingBtn" class="floating-btn">save</button>
 
     <div id="historyModal" class="modal-overlay">
@@ -81,7 +81,6 @@
         </div>
     </div>
     
-    <!-- Gemini Analysis Modal -->
     <div id="geminiAnalysisModal" class="modal-overlay">
         <div class="modal-content">
             <span id="closeGeminiModalBtn" class="modal-close-btn">&times;</span>
@@ -96,7 +95,7 @@
     </div>
 
     <div class="container">
-        <h1>แบบฟอร์มบันทึกข้อมูลภาษี</h1>
+        <h1>รายงานภาษีขาย</h1>
 
         <form id="taxDataForm">
             <div class="form-grid">
@@ -118,24 +117,13 @@
                 <div class="form-group"><label for="productPrice">ราคาสินค้า (ก่อน VAT):</label><input type="number" id="productPrice" name="productPrice" step="0.01" required></div>
                 <div class="form-group"><label for="vatAmount">ภาษี (VAT):</label><input type="number" id="vatAmount" name="vatAmount" step="0.01"></div>
                 <div class="form-group"><label for="totalPrice">ราคารวม:</label><input type="number" id="totalPrice" name="totalPrice" step="0.01" required></div>
-                <div class="form-group">
-                    <label for="reportTaxMonth">เดือนภาษี (สำหรับรายงาน):</label>
-                    <input type="text" id="reportTaxMonth" name="reportTaxMonth" placeholder="เช่น เมษายน">
-                </div>
-                <div class="form-group">
-                    <label for="reportTaxYear">ปี (สำหรับรายงาน):</label>
-                    <input type="number" id="reportTaxYear" name="reportTaxYear" placeholder="เช่น 2568">
-                </div>
+                
             </div>
             
             <div class="form-actions">
                 <button type="reset">ล้างข้อมูล</button>
                 <button type="submit">เพิ่มข้อมูลลงตาราง</button>
-                <button type="button" id="geminiAnalyzeBtn" class="action-btn" style="background-color: #8A2BE2;">✨ สรุปและวิเคราะห์ข้อมูลภาษี</button>
-                <label for="loadDataInput" class="action-btn" style="background-color: #5bc0de;">📂 เปิดไฟล์ข้อมูล</label>
-                <input type="file" id="loadDataInput" accept=".json" style="display: none;">
                 <button type="button" id="exportCsvBtn" class="action-btn" style="background-color: #2b823d;">📄 ส่งออกเป็น Excel (CSV)</button>
-                <button type="button" id="printOfficialReportBtn" class="action-btn" style="background-color: #007bff;">🖨️ พิมพ์รายงาน (รูปแบบทางการ)</button>
             </div>
         </form>
 
@@ -325,23 +313,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const exportCsvBtn = document.getElementById('exportCsvBtn');
     const printOfficialReportBtn = document.getElementById('printOfficialReportBtn');
 
-    loadDataInput.addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const data = JSON.parse(e.target.result);
-                populateTable(data);
-                alert(`โหลดข้อมูลสำเร็จ ${data.length} รายการ`);
-            } catch (error) {
-                alert('ไฟล์ไม่ถูกต้อง หรือเสียหาย');
-                console.error("Error parsing JSON:", error);
-            }
-        };
-        reader.readAsText(file);
-        loadDataInput.value = '';
-    });
+    if (loadDataInput) {
+        loadDataInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    populateTable(data);
+                    alert(`โหลดข้อมูลสำเร็จ ${data.length} รายการ`);
+                } catch (error) {
+                    alert('ไฟล์ไม่ถูกต้อง หรือเสียหาย');
+                    console.error("Error parsing JSON:", error);
+                }
+            };
+            reader.readAsText(file);
+            loadDataInput.value = '';
+        });
+    }
 
     exportCsvBtn.addEventListener('click', function() {
         const data = getTableData();
@@ -514,10 +504,12 @@ For "ภาพรวม", provide a brief, one-paragraph summary of the data.`;
             geminiAnalysisContent.innerHTML = `<p>เกิดข้อผิดพลาดในการเชื่อมต่อกับ Gemini API: ${error.message}</p>`;
         }
     }
-
-    geminiAnalyzeBtn.addEventListener('click', analyzeTaxDataWithGemini);
-    closeGeminiModalBtn.addEventListener('click', () => { geminiAnalysisModal.style.display = 'none'; });
-    
+    if (geminiAnalyzeBtn) {
+        geminiAnalyzeBtn.addEventListener('click', analyzeTaxDataWithGemini);
+    }
+    if (closeGeminiModalBtn) {
+        closeGeminiModalBtn.addEventListener('click', () => { geminiAnalysisModal.style.display = 'none'; });
+    }
     window.addEventListener('click', (event) => {
         if (event.target == geminiAnalysisModal) {
             geminiAnalysisModal.style.display = 'none';
