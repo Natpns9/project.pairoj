@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตารางข้อมูล (ลบแถวได้)</title>
+    <title>ตารางข้อมูล</title>
     <style>
         body { font-family: sans-serif; }
         table { border-collapse: collapse; width: 100%; font-size: 0.8em; }
@@ -30,7 +30,7 @@
 </head>
 <body>
 
-<h2>ตารางบันทึกข้อมูล (ลบแถวได้)</h2>
+<h2>ตารางบันทึกข้อมูล</h2>
 
 <button id="addRowBtn">เพิ่มแถวใหม่</button>
 <button id="exportCsvBtn">ส่งออกเป็น CSV (Excel)</button>
@@ -57,7 +57,7 @@
             <th>ภาษีมูลค่าเพิ่ม</th>
             <th>เงื่อนไขการหักภาษี</th>
             <th>หมายเหตุ</th>
-            <th>ลบ</th> {/* หัวคอลัมน์ใหม่สำหรับปุ่มลบ */}
+            <th>ลบ</th> 
         </tr>
     </thead>
     <tbody>
@@ -91,7 +91,7 @@
             <td class="vat-amount-display">0.00</td>
             <td><input type="text" class="withholding-condition-input" value="1"></td>
             <td><input type="text" class="notes-input"></td>
-            <td><button type="button" class="delete-row-btn">ลบ</button></td> {/* ปุ่มลบในแต่ละแถว */}
+            <td><button type="button" class="delete-row-btn">ลบ</button></td> 
         </tr>
         </tbody>
 </table>

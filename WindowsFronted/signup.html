@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สมัครสมาชิก - YourWebsite</title>
+    <style>
+        /* --- Import Google Fonts (Sarabun) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+
+        /* --- General Styling --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* --- Container for the Signup Card --- */
+        .container {
+            width: 100%;
+            padding: 20px;
+        }
+
+        /* --- Signup Card --- */
+        .signup-card {
+            background-color: #ffffff;
+            padding: 2.5rem 3rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .signup-card h1 {
+            text-align: center;
+            color: #1a202c;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .signup-card p.subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+
+        /* --- Input Fields --- */
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #4a5568;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Sarabun', sans-serif;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+
+        /* --- Terms and Conditions --- */
+        .terms-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        .terms-group input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .terms-group a {
+            color: #4299e1;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .terms-group a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Submit Button --- */
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #4299e1, #3182ce);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(50, 130, 206, 0.4);
+        }
+
+        /* --- Login Link --- */
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #718096;
+        }
+
+        .login-link a {
+            color: #4299e1;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        /* --- Error Message Box --- */
+        #error-messages {
+            background-color: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fbb6ce;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: none; /* Hidden by default */
+        }
+        
+        #error-messages ul {
+            padding-left: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="signup-card">
+            <h1>สร้างบัญชีผู้ใช้ใหม่</h1>
+            <p class="subtitle">กรอกข้อมูลเพื่อเริ่มต้นใช้งาน</p>
+
+            <div id="error-messages"></div>
+
+            <form id="signupForm" action="#" method="POST" onsubmit="return validateForm()">
+                
+                <div class="input-group">
+                    <label for="username">ชื่อผู้ใช้ (Username)</label>
+                    <input type="text" id="username" name="username" placeholder="เช่น user123" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">อีเมล</label>
+                    <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">รหัสผ่าน</label>
+                    <input type="password" id="password" name="password" placeholder="อย่างน้อย 8 ตัวอักษร" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="confirmPassword">ยืนยันรหัสผ่าน</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="กรอกรหัสผ่านอีกครั้ง" required>
+                </div>
+                
+                <div class="terms-group">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">ฉันยอมรับ <a href="#">ข้อตกลงและเงื่อนไขการใช้งาน</a></label>
+                </div>
+
+                <button type="submit" class="submit-btn">สมัครสมาชิก</button>
+
+            </form>
+
+            <p class="login-link">
+                มีบัญชีอยู่แล้ว? <a href="#">เข้าสู่ระบบที่นี่</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function validateForm() {
+            // Get form elements
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const terms = document.getElementById('terms').checked;
+            
+            const errorMessagesContainer = document.getElementById('error-messages');
+            let errors = [];
+
+            // Reset previous errors
+            errorMessagesContainer.innerHTML = '';
+            errorMessagesContainer.style.display = 'none';
+
+            // --- Validation Rules ---
+            // 1. Username length
+            if (username.length < 5) {
+                errors.push('ชื่อผู้ใช้ต้องมีความยาวอย่างน้อย 5 ตัวอักษร');
+            }
+
+            // 2. Password length
+            if (password.length < 8) {
+                errors.push('รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร');
+            }
+
+            // 3. Password match
+            if (password !== confirmPassword) {
+                errors.push('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน');
+            }
+            
+            // 4. Terms and conditions
+            if (!terms) {
+                errors.push('โปรดยอมรับข้อตกลงและเงื่อนไขการใช้งาน');
+            }
+
+            // --- Display errors if any ---
+            if (errors.length > 0) {
+                errorMessagesContainer.style.display = 'block';
+                let errorList = '<ul>';
+                errors.forEach(function(error) {
+                    errorList += '<li>' + error + '</li>';
+                });
+                errorList += '</ul>';
+                errorMessagesContainer.innerHTML = errorList;
+                
+                // Prevent form submission
+                return false; 
+            }
+            
+            // If validation passes
+            alert('สมัครสมาชิกสำเร็จ! (นี่เป็นเพียงตัวอย่าง)');
+            // In a real application, you would let the form submit to the server.
+            // For this example, we return false to prevent the page from reloading.
+            console.log('Form is valid. Submitting data...');
+            console.log('Username:', username);
+            console.log('Email:', email);
+            
+            return false; // Change to 'return true;' to allow actual form submission.
+        }
+    </script>
+
+</body>
+</html>
