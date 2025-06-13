@@ -9,10 +9,21 @@ body {
     font-family: 'Tahoma', 'Arial', sans-serif; /* ใช้ฟอนต์ที่รองรับภาษาไทย */
     line-height: 1.6;
     background-color: #f4f7f6; /* สีพื้นหลังอ่อนๆ */
-    color: #333;
+    color: #dfdfdf;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+
+}
+body {
+    /* การใช้ linear-gradient จะเป็นการสร้างเลเยอร์สีขาวโปร่งแสง (opacity 80%) ทับบนรูปภาพ */
+    /* คุณสามารถเปลี่ยนค่า rgba(255, 255, 255, 0.8) เป็นสีอื่นหรือปรับความโปร่งแสงได้ตามต้องการ */
+     background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('background.png');
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 .container {
@@ -23,7 +34,7 @@ body {
 
 /* Header Styles */
 .site-header {
-    background-color: #ffffff; /* สีพื้นหลัง Header */
+    background-color: #ffffff42; /* สีพื้นหลัง Header */
     padding: 15px 0;
     border-bottom: 2px solid #4CAF50; /* เส้นขอบสีเขียว (ตัวอย่าง) */
 }
@@ -57,25 +68,25 @@ body {
 
 .company-details h1 {
     font-size: 1.4em;
-    color: #2c3e50;
+    color: #ffffff;
     margin-bottom: 2px;
 }
 
 .company-details .eng-name {
     font-size: 0.9em;
-    color: #7f8c8d;
+    color: #fdffff;
     margin-bottom: 5px;
 }
 
 .company-details p {
     font-size: 0.8em;
-    color: #555;
+    color: #fff5f5;
 }
 
 
 .auth-link {
     text-decoration: none;
-    color: #337ab7; /* สีลิงก์ตัวอย่าง */
+    color: #f3f3f3; /* สีลิงก์ตัวอย่าง */
     font-size: 0.9em;
     margin: 0 3px; /* ลดระยะห่างข้างลิงก์เล็กน้อย */
     padding: 5px;
@@ -83,12 +94,12 @@ body {
 
 .auth-link:hover {
     text-decoration: underline;
-    color: #23527c;
+    color: #fdfeff;
 }
 
 .auth-separator {
     font-size: 0.9em;
-    color: #777;
+    color: #ffffff;
     margin: 0 2px;
 }
 
@@ -106,7 +117,7 @@ body {
     font-size: 1.5em; /* ทำให้ตัว 'U' ใหญ่ขึ้นหน่อย */
     /* margin-bottom: 5px;  ถูกย้ายไปที่ .user-profile-section .user-profile */
 }
-ี.user-actions{
+.user-actions{
     flex-basis: 150px;
     min-width: 120px;
     flex-shrink: 0;
@@ -127,7 +138,7 @@ body {
 .main-content h2 {
     font-size: 2em;
     margin-bottom: 20px;
-    color: #333;
+    color: #fffcfc;
 }
 
 .action-buttons .btn {
@@ -148,6 +159,23 @@ body {
     background-color: #4cae4c; /* สีเขียวเข้มขึ้นเมื่อ hover */
 }
 
+/* ========== โค้ดที่เพิ่มเข้ามา ========== */
+/* สไตล์สำหรับปุ่มที่ถูกปิดการใช้งาน */
+.btn.disabled {
+    background-color: #cccccc; /* สีพื้นหลังเทา */
+    color: #666666;           /* สีตัวอักษรเทาเข้ม */
+    cursor: not-allowed;     /* เปลี่ยนเคอร์เซอร์เป็นสัญลักษณ์ห้าม */
+    pointer-events: none;      /* ปิดการใช้งาน event ของเมาส์ */
+}
+
+/* ทำให้ปุ่มไม่เปลี่ยนสีเมื่อเอาเมาส์ไปชี้ */
+.btn.disabled:hover {
+    background-color: #cccccc;
+    box-shadow: none;
+    transform: none;
+}
+/* ========== สิ้นสุดโค้ดที่เพิ่มเข้ามา ========== */
+
 .action-buttons .btn-secondary {
     background-color: #f0ad4e; /* สีส้มสำหรับปุ่มรอง (ตัวอย่าง) */
 }
@@ -158,12 +186,12 @@ body {
 .info-text {
     margin-top: 30px;
     font-size: 0.9em;
-    color: #666;
+    color: #ffffff;
 }
 
 /* Footer Styles */
 .site-footer {
-    background-color: #333;
+
     color: #fff;
     text-align: center;
     padding: 15px 0;
@@ -185,7 +213,7 @@ body {
             padding: 20px;
             background-color: #fff;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgb(245, 244, 244);
         }
         .login-container h2 {
             text-align: center;

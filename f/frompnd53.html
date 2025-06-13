@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตารางบันทึกข้อมูลภาษี</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --secondary-color: #6c757d;
+            --secondary-hover: #5a6268;
+            --success-color: #28a745;
+            --success-hover: #218838;
+            --danger-color: #dc3545;
+            --danger-hover: #c82333;
+            --info-color: #17a2b8;
+            --info-hover: #138496;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #dee2e6;
+            --background-color: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--background-color);
+            color: var(--dark-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: var(--dark-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        .controls-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1em;
+            padding: 10px 18px;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        button svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* === CSS ที่เพิ่มเข้ามา === */
+        #backBtn { background-color: var(--secondary-color); }
+        #backBtn:hover { background-color: var(--secondary-hover); transform: translateY(-2px); }
+        /* ======================== */
+
+        #addRowBtn { background-color: var(--success-color); }
+        #addRowBtn:hover { background-color: var(--success-hover); transform: translateY(-2px); }
+        
+        #saveDataBtn { background-color: var(--info-color); }
+        #saveDataBtn:hover { background-color: var(--info-hover); transform: translateY(-2px); }
+
+        #historyBtn { background-color: var(--secondary-color); }
+        #historyBtn:hover { background-color: var(--secondary-hover); transform: translateY(-2px); }
+
+        #exportCsvBtn { background-color: var(--primary-color); }
+        #exportCsvBtn:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 0.9em;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            text-align: left;
+            padding: 10px 12px;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: var(--light-color);
+            white-space: nowrap;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            font-size: 0.8em;
+            letter-spacing: 0.5px;
+        }
+
+        tr:nth-child(even) { background-color: #fdfdfd; }
+        tr:hover { background-color: #e9ecef; }
+        
+        select, input[type="text"], input[type="number"], input[type="date"] {
+            width: 100%;
+            padding: 8px 10px;
+            box-sizing: border-box;
+            font-size: 1em;
+            font-family: 'Sarabun', sans-serif;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        select:focus, input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .vat-amount-display { font-weight: bold; color: var(--dark-color); }
+
+        button.delete-row-btn {
+            background-color: var(--danger-color);
+            padding: 6px 10px;
+            font-size: 0.9em;
+            margin: 0;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+        button.delete-row-btn:hover { background-color: var(--danger-hover); }
+        
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 25px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+            animation: slideIn 0.4s;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5em;
+        }
+        .close-btn {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-btn:hover, .close-btn:focus { color: black; }
+        
+        #historyList {
+            list-style: none;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #historyList li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            background-color: var(--light-color);
+        }
+        #historyList li:last-child { margin-bottom: 0; }
+        #historyList .history-item-actions button {
+            font-size: 0.9em;
+            padding: 5px 10px;
+            margin-left: 8px;
+        }
+        
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+        @keyframes slideIn { from {transform: translateY(-50px);} to {transform: translateY(0);} }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ตารางบันทึกข้อมูล ภ.ง.ด.53</h2>
+
+    <div class="controls-container">
+        <button id="backBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+            </svg>
+            ย้อนกลับ
+        </button>
+        <button id="addRowBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+            เพิ่มแถวใหม่
+        </button>
+        <button id="saveDataBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+            บันทึกข้อมูล
+        </button>
+        <button id="historyBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6-2.292m0 0v14.25" /></svg>
+            ประวัติการบันทึก
+        </button>
+        <button id="exportCsvBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+            ส่งออกเป็น CSV
+        </button>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>ลำดับที่</th>
+                    <th>คำนำหน้า</th>
+                    <th>ชื่อกิจการ (หลัก)</th>
+                    <th>รหัสผู้เสียภาษีอากร</th>
+                    <th>ชื่อสถานประกอบการ/อาคาร</th>
+                    <th>เลขที่/หมู่ที่</th>
+                    <th>ตรอก/ซอย</th>
+                    <th>ถนน</th>
+                    <th>ตำบล/แขวง</th>
+                    <th>อำเภอ/เขต</th>
+                    <th>จังหวัด</th>
+                    <th>รหัสไปรษณีย์</th>
+                    <th>วัน/เดือน/ปี</th>
+                    <th>ประเภทเงินได้</th>
+                    <th>อัตราภาษี (%)</th>
+                    <th>มูลค่าสินค้า/บริการ</th>
+                    <th>ภาษีมูลค่าเพิ่ม</th>
+                    <th>เงื่อนไข</th>
+                    <th>หมายเหตุ</th>
+                    <th>ลบ</th> 
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<datalist id="main-name-suggestions"></datalist>
+
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>ประวัติการบันทึก</h3>
+            <span class="close-btn">&times;</span>
+        </div>
+        <div class="modal-body">
+            <ul id="historyList">
+                </ul>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const companyDataStore = [
+        { prefix: "บริษัท", mainName: "รักษาความปลอดภัย สยามการ์ด แอนด์ คลีนนิ่ง จำกัด", taxId: "0603562007770", establishmentName: "-", number: "2", soi: "ฉลองกรุง 14", road: "ฉลองกรุง", moo: "", subdistrict: "ลำปลาทิว", district: "ลาดกระบัง", province: "กรุงเทพฯ", postalCode: "10520" },
+        { prefix: "หจก.", mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง (สาขาบางนา)", taxId: "0105532012207", establishmentName: "อาคารบางนาทาวเวอร์ ตึกบี ชั้น 15", number: "999/64", soi: "", road: "บางนา-ตราด", moo: "1", subdistrict: "บางแก้ว", district: "บางพลี", province: "สมุทรปราการ", postalCode: "10540" },
+        { prefix: "บริษัท", mainName: "พรอสเพอร์ เอ็นจิเนียริ่ง จำกัด (มหาชน) - สาขาพัฒนาการ", taxId: "0105532012207", establishmentName: "สำนักงานพัฒนาการ", number: "17", soi: "พัฒนาการ 69", road: "พัฒนาการ", moo: "", subdistrict: "ประเวศ", district: "ประเวศ", province: "กรุงเทพฯ", postalCode: "10250" },
+        { prefix: "บริษัท", mainName: "ไทยยูเนี่ยน กรุ๊ป จำกัด (มหาชน)", taxId: "0107537000877", establishmentName: "อาคารเอสเอ็มทาวเวอร์", number: "979/12", soi: "", road: "พหลโยธิน", moo: "", subdistrict: "สามเสนใน", district: "พญาไท", province: "กรุงเทพฯ", postalCode: "10400" }
+    ];
+
+    const newRowHTML = `
+        <tr>
+            <td class="row-number">1</td>
+            <td>
+                <select class="prefix-select">
+                    <option value="">-- คำนำหน้า --</option>
+                    <option value="บริษัท">บริษัท</option>
+                    <option value="หจก.">หจก.</option>
+                </select>
+            </td>
+            <td><input type="text" class="main-name-input" list="main-name-suggestions" placeholder="พิมพ์/เลือกชื่อกิจการหลัก"></td>
+            <td><input type="text" class="tax-id-input" placeholder="กรอกเลขผู้เสียภาษี"></td>
+            <td class="establishment-name-display"></td>
+            <td class="address-number-moo-display"></td>
+            <td class="soi-display"></td>
+            <td class="road-display"></td>
+            <td class="subdistrict-display"></td>
+            <td class="district-display"></td>
+            <td class="province-display"></td>
+            <td class="postal-code-display"></td>
+            <td><input type="date" class="date-input"></td>
+            <td><input type="text" class="income-type-input" placeholder="เช่น ค่าบริการ"></td>
+            <td>
+                <select class="tax-rate-select">
+                    <option value="0">0</option><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option><option value="7">7</option><option value="10">10</option>
+                </select>
+            </td>
+            <td><input type="number" class="value-input" placeholder="0.00" step="0.01"></td>
+            <td class="vat-amount-display">0.00</td>
+            <td><input type="text" class="withholding-condition-input" value="1"></td>
+            <td><input type="text" class="notes-input"></td>
+            <td><button type="button" class="delete-row-btn" title="ลบแถวนี้">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px; height:16px; color:white;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.067-2.09.921-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+              </button></td> 
+        </tr>`;
+
+    function getCurrentDateString() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function populateMainNameDatalist() {
+        const datalist = document.getElementById('main-name-suggestions');
+        if (!datalist) return;
+        datalist.innerHTML = ''; 
+        const uniqueMainNames = new Set();
+        companyDataStore.forEach(company => {
+            if (company.mainName && company.mainName.trim() !== '') {
+                uniqueMainNames.add(company.mainName.trim());
+            }
+        });
+        uniqueMainNames.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            datalist.appendChild(option);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeTable();
+        populateMainNameDatalist(); 
+        
+        const dataTable = document.getElementById('dataTable');
+        dataTable.addEventListener('change', function(event) {
+            const target = event.target;
+            const currentRow = target.closest('tr');
+            if (!currentRow) return;
+            if (target.classList.contains('prefix-select') ||
+                target.classList.contains('main-name-input') ||
+                target.classList.contains('tax-id-input')) {
+                attemptCompanyLookup(currentRow);
+            } else if (target.classList.contains('value-input') || target.classList.contains('tax-rate-select')) {
+                updateTax(currentRow);
+            }
+        });
+        dataTable.addEventListener('input', function(event){
+            const target = event.target;
+            const currentRow = target.closest('tr');
+            if (!currentRow) return;
+            if (target.classList.contains('value-input')) { updateTax(currentRow); } 
+        });
+        dataTable.addEventListener('click', function(event) {
+            const button = event.target.closest('.delete-row-btn');
+            if (button) {
+                const rowToDelete = button.closest('tr');
+                if (rowToDelete) {
+                    rowToDelete.remove();
+                    updateRowNumbers();
+                    if (document.getElementById('dataTable').querySelector('tbody').rows.length === 0) {
+                        addNewRow();
+                    }
+                }
+            }
+        });
+        
+        // === JavaScript ที่เพิ่มเข้ามา ===
+        document.getElementById('backBtn').addEventListener('click', () => {
+            window.history.back();
+        });
+        // ============================
+
+        document.getElementById('addRowBtn').addEventListener('click', () => addNewRow());
+        document.getElementById('exportCsvBtn').addEventListener('click', function() {
+            exportTableToCSV('ข้อมูลตาราง ' + getCurrentDateString() + '.csv');
+        });
+        document.getElementById('saveDataBtn').addEventListener('click', saveDataToLocalStorage);
+        document.getElementById('historyBtn').addEventListener('click', openHistoryModal);
+        document.querySelector('.modal .close-btn').addEventListener('click', closeHistoryModal);
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('historyModal')) {
+                closeHistoryModal();
+            }
+        });
+    });
+    
+    function initializeTable() {
+        const tableBody = document.getElementById('dataTable').querySelector('tbody');
+        if (tableBody.rows.length === 0) {
+            addNewRow();
+        }
+    }
+
+    function updateRowNumbers() {
+        const tableBody = document.getElementById('dataTable').querySelector('tbody');
+        const rows = tableBody.querySelectorAll('tr');
+        rows.forEach((row, index) => {
+            const rowNumberCell = row.querySelector('.row-number') || row.cells[0];
+            if (rowNumberCell) {
+                rowNumberCell.textContent = index + 1;
+            }
+        });
+    }
+
+    function clearCompanyDetailsFields(row) {
+        row.querySelector('.establishment-name-display').textContent = '';
+        row.querySelector('.address-number-moo-display').textContent = '';
+        row.querySelector('.soi-display').textContent = '';
+        row.querySelector('.road-display').textContent = '';
+        row.querySelector('.subdistrict-display').textContent = '';
+        row.querySelector('.district-display').textContent = '';
+        row.querySelector('.province-display').textContent = '';
+        row.querySelector('.postal-code-display').textContent = '';
+    }
+
+    function populateAllFieldsFromCompany(row, company) {
+        row.querySelector('.prefix-select').value = company.prefix;
+        row.querySelector('.main-name-input').value = company.mainName;
+        row.querySelector('.tax-id-input').value = company.taxId; 
+        row.querySelector('.establishment-name-display').textContent = company.establishmentName || '';
+        let numberMooText = '';
+        if (company.number && company.number.trim() !== '') { numberMooText += company.number.trim(); }
+        if (company.moo && company.moo.trim() !== '') { numberMooText += (numberMooText ? ' ' : '') + 'หมู่ ' + company.moo.trim(); }
+        row.querySelector('.address-number-moo-display').textContent = numberMooText;
+        row.querySelector('.soi-display').textContent = company.soi || '';
+        row.querySelector('.road-display').textContent = company.road || '';
+        row.querySelector('.subdistrict-display').textContent = company.subdistrict || '';
+        row.querySelector('.district-display').textContent = company.district || '';
+        row.querySelector('.province-display').textContent = company.province || '';
+        row.querySelector('.postal-code-display').textContent = company.postalCode || '';
+    }
+
+    function attemptCompanyLookup(row) {
+        const prefixInput = row.querySelector('.prefix-select');
+        const mainNameInput = row.querySelector('.main-name-input');
+        const taxIdInput = row.querySelector('.tax-id-input');
+        const prefix = prefixInput.value;
+        const mainName = mainNameInput.value.trim();
+        const taxId = taxIdInput.value.trim();
+        if (taxId) {
+            const company = companyDataStore.find(c => c.taxId === taxId);
+            if (company) { populateAllFieldsFromCompany(row, company); } 
+            else { 
+                mainNameInput.value = '';
+                clearCompanyDetailsFields(row); 
+            }
+            return; 
+        }
+        if (mainName) {
+            const company = companyDataStore.find(c => c.mainName.toLowerCase() === mainName.toLowerCase() && (c.prefix === prefix || !prefix) );
+            if (company) { populateAllFieldsFromCompany(row, company); } 
+            else { 
+                taxIdInput.value = '';
+                clearCompanyDetailsFields(row); 
+            }
+            return; 
+        }
+    }
+
+    function updateTax(row) {
+        const valueInput = row.querySelector('.value-input');
+        const taxRateSelect = row.querySelector('.tax-rate-select');
+        const vatAmountDisplay = row.querySelector('.vat-amount-display');
+        const value = parseFloat(valueInput.value) || 0;
+        const taxRate = parseFloat(taxRateSelect.value) || 0;
+        const vatAmount = (value * taxRate) / 100;
+        vatAmountDisplay.textContent = vatAmount.toFixed(2);
+    }
+    
+    // --- ### CORRECTED `addNewRow` FUNCTION ### ---
+    function addNewRow(rowData = null) {
+        const tableBody = document.getElementById('dataTable').querySelector('tbody');
+        
+        // Use a <template> element for correct, safe HTML parsing.
+        const template = document.createElement('template');
+        template.innerHTML = newRowHTML.trim();
+        const newRow = template.content.firstChild;
+
+        if (rowData) {
+            // Populate row with data from history
+            newRow.querySelector('.prefix-select').value = rowData.prefix;
+            newRow.querySelector('.main-name-input').value = rowData.mainName;
+            newRow.querySelector('.tax-id-input').value = rowData.taxId;
+            newRow.querySelector('.date-input').value = rowData.date;
+            newRow.querySelector('.income-type-input').value = rowData.incomeType;
+            newRow.querySelector('.tax-rate-select').value = rowData.taxRate;
+            newRow.querySelector('.value-input').value = rowData.value;
+            newRow.querySelector('.withholding-condition-input').value = rowData.withholdingCondition;
+            newRow.querySelector('.notes-input').value = rowData.notes;
+            
+            attemptCompanyLookup(newRow);
+    
+        } else {
+            // Set current date for a new blank row
+            const dateInput = newRow.querySelector('.date-input');
+            if(dateInput) dateInput.value = getCurrentDateString(); 
+        }
+
+        tableBody.appendChild(newRow);
+        updateRowNumbers();
+        updateTax(newRow); // Calculate tax for the new row
+    }
+
+    function escapeCsvCell(cellData) {
+        if (cellData === null || cellData === undefined) { return ''; }
+        cellData = String(cellData); cellData = cellData.replace(/"/g, '""'); 
+        if (cellData.search(/("|,|\n)/g) >= 0) { cellData = `"${cellData}"`; }
+        return cellData;
+    }
+
+    function exportTableToCSV(filename) {
+        let csvContent = "\uFEFF"; 
+        const table = document.getElementById('dataTable');
+        const headerRow = table.querySelector('thead tr');
+        if (headerRow) {
+            const headerData = [];
+            const headerCols = headerRow.querySelectorAll('th');
+            for (let i = 0; i < headerCols.length - 1; i++) {
+                headerData.push(escapeCsvCell(headerCols[i].textContent.trim()));
+            }
+            if (headerData.length > 0) {
+                 csvContent += headerData.join(',') + '\r\n';
+            }
+        }
+        const dataRows = table.querySelectorAll('tbody tr');
+        dataRows.forEach(row => {
+            const rowData = [];
+            const dataCols = row.querySelectorAll('td');
+            for (let i = 0; i < dataCols.length - 1; i++) {
+                const col = dataCols[i];
+                let cellText = '';
+                const inputField = col.querySelector('input, select');
+                if (inputField) {
+                    cellText = inputField.value;
+                } else {
+                    cellText = col.textContent.trim();
+                }
+                rowData.push(escapeCsvCell(cellText));
+            }
+            if (rowData.length > 0) {
+                csvContent += rowData.join(',') + '\r\n';
+            }
+        });
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url); link.setAttribute('download', filename);
+            link.style.visibility = 'hidden'; document.body.appendChild(link);
+            link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+        }
+    }
+    
+    const STORAGE_KEY = 'taxDataTableHistory';
+
+    function saveDataToLocalStorage() {
+        const tableBody = document.getElementById('dataTable').querySelector('tbody');
+        const rows = tableBody.querySelectorAll('tr');
+        if (rows.length === 0) {
+            alert("ไม่มีข้อมูลในตารางให้บันทึก");
+            return;
+        }
+
+        const tableData = [];
+        rows.forEach(row => {
+            const rowData = {
+                prefix: row.querySelector('.prefix-select').value,
+                mainName: row.querySelector('.main-name-input').value,
+                taxId: row.querySelector('.tax-id-input').value,
+                date: row.querySelector('.date-input').value,
+                incomeType: row.querySelector('.income-type-input').value,
+                taxRate: row.querySelector('.tax-rate-select').value,
+                value: row.querySelector('.value-input').value,
+                withholdingCondition: row.querySelector('.withholding-condition-input').value,
+                notes: row.querySelector('.notes-input').value,
+            };
+            if(rowData.mainName.trim() !== '' || rowData.taxId.trim() !== '' || parseFloat(rowData.value) > 0) {
+                tableData.push(rowData);
+            }
+        });
+
+        if(tableData.length === 0) {
+            alert("ไม่มีข้อมูลที่สมบูรณ์ให้บันทึก");
+            return;
+        }
+
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const timestamp = new Date();
+        const newEntry = {
+            id: timestamp.getTime(),
+            savedAt: timestamp.toLocaleString('th-TH'),
+            data: tableData
+        };
+
+        history.unshift(newEntry);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        alert('บันทึกข้อมูลสำเร็จ!');
+    }
+    
+    function openHistoryModal() {
+        const modal = document.getElementById('historyModal');
+        populateHistoryList();
+        modal.style.display = 'block';
+    }
+
+    function closeHistoryModal() {
+        const modal = document.getElementById('historyModal');
+        modal.style.display = 'none';
+    }
+
+    function populateHistoryList() {
+        const historyList = document.getElementById('historyList');
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        historyList.innerHTML = '';
+
+        if (history.length === 0) {
+            historyList.innerHTML = '<li>ไม่มีประวัติการบันทึก</li>';
+            return;
+        }
+
+        history.forEach(entry => {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                <span>บันทึกเมื่อ: ${entry.savedAt} (${entry.data.length} รายการ)</span>
+                <div class="history-item-actions">
+                    <button class="load-history-btn" style="background-color: var(--success-color);" data-id="${entry.id}">เรียกดู</button>
+                    <button class="delete-history-btn" style="background-color: var(--danger-color);" data-id="${entry.id}">ลบ</button>
+                </div>
+            `;
+            historyList.appendChild(listItem);
+        });
+        
+        document.querySelectorAll('.load-history-btn').forEach(button => {
+            button.addEventListener('click', loadHistoryEntry);
+        });
+        document.querySelectorAll('.delete-history-btn').forEach(button => {
+            button.addEventListener('click', deleteHistoryEntry);
+        });
+    }
+
+    function loadHistoryEntry(event) {
+        const entryId = Number(event.target.getAttribute('data-id'));
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const entryToLoad = history.find(entry => entry.id === entryId);
+
+        if (!entryToLoad) return;
+
+        const tableBody = document.getElementById('dataTable').querySelector('tbody');
+        tableBody.innerHTML = '';
+
+        entryToLoad.data.forEach(rowData => {
+            addNewRow(rowData);
+        });
+
+        closeHistoryModal();
+    }
+    
+    function deleteHistoryEntry(event) {
+        const entryId = Number(event.target.getAttribute('data-id'));
+        if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบประวัติรายการนี้?')) {
+            let history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            history = history.filter(entry => entry.id !== entryId);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            populateHistoryList();
+        }
+    }
+
+</script>
+
+</body>
+</html>

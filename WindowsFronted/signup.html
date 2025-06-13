@@ -206,68 +206,65 @@
         </div>
     </div>
 
-    <script>
-        function validateForm() {
-            // Get form elements
+   <script>
+    // เปลี่ยนจาก onsubmit ใน HTML มาใช้ addEventListener แทน ซึ่งเป็นวิธีที่ทันสมัยกว่า
+    document.addEventListener('DOMContentLoaded', function() {
+        const signupForm = document.getElementById('signupForm');
+        const errorMessagesContainer = document.getElementById('error-messages');
+
+        signupForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); // หยุดการ submit แบบปกติของฟอร์ม
+
+            // --- Client-side validation ---
             const username = document.getElementById('username').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const terms = document.getElementById('terms').checked;
             
-            const errorMessagesContainer = document.getElementById('error-messages');
             let errors = [];
-
-            // Reset previous errors
             errorMessagesContainer.innerHTML = '';
             errorMessagesContainer.style.display = 'none';
 
-            // --- Validation Rules ---
-            // 1. Username length
-            if (username.length < 5) {
-                errors.push('ชื่อผู้ใช้ต้องมีความยาวอย่างน้อย 5 ตัวอักษร');
-            }
+            if (username.length < 5) errors.push('ชื่อผู้ใช้ต้องมีความยาวอย่างน้อย 5 ตัวอักษร');
+            if (password.length < 8) errors.push('รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร');
+            if (password !== confirmPassword) errors.push('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน');
+            if (!terms) errors.push('โปรดยอมรับข้อตกลงและเงื่อนไขการใช้งาน');
 
-            // 2. Password length
-            if (password.length < 8) {
-                errors.push('รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร');
-            }
-
-            // 3. Password match
-            if (password !== confirmPassword) {
-                errors.push('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน');
-            }
-            
-            // 4. Terms and conditions
-            if (!terms) {
-                errors.push('โปรดยอมรับข้อตกลงและเงื่อนไขการใช้งาน');
-            }
-
-            // --- Display errors if any ---
             if (errors.length > 0) {
                 errorMessagesContainer.style.display = 'block';
-                let errorList = '<ul>';
-                errors.forEach(function(error) {
-                    errorList += '<li>' + error + '</li>';
-                });
-                errorList += '</ul>';
+                let errorList = '<ul>' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
                 errorMessagesContainer.innerHTML = errorList;
-                
-                // Prevent form submission
-                return false; 
+                return;
             }
-            
-            // If validation passes
-            alert('สมัครสมาชิกสำเร็จ! (นี่เป็นเพียงตัวอย่าง)');
-            // In a real application, you would let the form submit to the server.
-            // For this example, we return false to prevent the page from reloading.
-            console.log('Form is valid. Submitting data...');
-            console.log('Username:', username);
-            console.log('Email:', email);
-            
-            return false; // Change to 'return true;' to allow actual form submission.
-        }
-    </script>
 
+            // --- Send data to Backend API ---
+            const signupApiUrl = 'http://localhost:3001/api/auth/signup';
+
+            try {
+                const response = await fetch(signupApiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    // ถ้า Server ตอบกลับมาพร้อม Error (เช่น 400, 409)
+                    throw new Error(responseData.message || `Error: ${response.status}`);
+                }
+
+                // --- Signup สำเร็จ ---
+                alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
+                window.location.href = 'login.html'; // ไปยังหน้า Login
+
+            } catch (error) {
+                errorMessagesContainer.style.display = 'block';
+                errorMessagesContainer.innerHTML = `<ul><li>${error.message}</li></ul>`;
+            }
+        });
+    });
+</script>
 </body>
 </html>

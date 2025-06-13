@@ -5,69 +5,314 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>แบบฟอร์มภาษีพร้อมการวิเคราะห์ด้วย Gemini</title>
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js" async></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
         /* CSS Styles */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; font-family: 'Tahoma', 'Sarabun', sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; }
-        body { display: flex; flex-direction: column; padding: 10px; }
-        .container { width: 100%; max-width: 100%; flex-grow: 1; display: flex; flex-direction: column; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow-y: auto; }
-        h1, h2 { color: #2c3e50; text-align: center; margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { margin-bottom: 6px; font-weight: bold; color: #555; }
+        html, body { height: 100%; }
+        
+        body {
+            font-family: 'Kanit', 'Tahoma', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        h1, h2 {
+            color: #1a73e8;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        h1 {
+            border-bottom: 2px solid #e3f2fd;
+            padding-bottom: 15px;
+        }
+        
+        h2 {
+            margin-top: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #37474f;
+        }
+
         .form-group input[type="text"],
         .form-group input[type="date"],
         .form-group input[type="number"],
-        .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; width: 100%; }
-        .branch-options { display: flex; align-items: center; flex-wrap: wrap; }
-        .branch-options label { margin-right: 10px; margin-bottom: 0; font-weight: normal; }
-        .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-        .form-actions button, .delete-btn, .action-btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; color: white; transition: background-color 0.3s ease; }
-        .form-actions button[type="submit"] { background-color: #5cb85c; }
-        .form-actions button[type="submit"]:hover { background-color: #4cae4c; }
-        .form-actions button[type="reset"] { background-color: #f0ad4e; }
-        .form-actions button[type="reset"]:hover { background-color: #ec971f; }
-        .delete-btn { background-color: #d9534f; padding: 5px 10px; font-size: 0.8em; }
-        .delete-btn:hover { background-color: #c9302c; }
-        .data-table-container { margin-top: 25px; overflow-x: auto; flex-grow: 1; }
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th, .data-table td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.85em; }
-        .data-table th { background-color: #e9ecef; position: sticky; top: 0; z-index: 1; }
+        .form-group select {
+            padding: 12px;
+            border: 1px solid #cfd8dc;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Kanit', sans-serif;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #1a73e8;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+        }
+
+        .branch-options {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding-top: 5px;
+        }
+
+        .branch-options label {
+            margin-right: 10px;
+            margin-bottom: 0;
+            font-weight: 400;
+            color: #546e7a;
+            cursor: pointer;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-actions button, .delete-btn, .action-btn, .edit-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: 'Kanit', sans-serif;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-actions button:hover, .delete-btn:hover, .action-btn:hover, .edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .form-actions button[type="submit"] { background-color: #34a853; }
+        .form-actions button[type="submit"]:hover { background-color: #1e8e3e; }
+        
+        .form-actions button[type="reset"] { background-color: #fbbc05; }
+        .form-actions button[type="reset"]:hover { background-color: #e39400; }
+        
+        .action-btn { background-color: #4285f4; }
+        .action-btn:hover { background-color: #1a73e8; }
+        
+        .action-btn.export { background-color: #1e8e3e; }
+        .action-btn.export:hover { background-color: #127329; }
+        
+        .edit-btn { background-color: #4285f4; padding: 6px 12px; font-size: 0.85em; }
+        .edit-btn:hover { background-color: #1a73e8; }
+
+        .delete-btn { background-color: #ea4335; padding: 6px 12px; font-size: 0.85em; }
+        .delete-btn:hover { background-color: #c5221f; }
+
+        .data-table-container {
+            margin-top: 25px;
+            overflow-x: auto;
+            flex-grow: 1;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th, .data-table td {
+            border-bottom: 1px solid #e0e0e0;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 0.9em;
+            vertical-align: middle; 
+            word-break: break-word; 
+        }
+        
+        .data-table th {
+            background-color: #f7f9fc;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-weight: 600;
+            color: #202124;
+            white-space: nowrap;
+        }
+
+        .data-table th:nth-child(1), .data-table td:nth-child(1) { width: 5%; }
+        .data-table th:nth-child(2), .data-table td:nth-child(2) { width: 9%; }
+        .data-table th:nth-child(3), .data-table td:nth-child(3) { width: 9%; }
+        .data-table th:nth-child(4), .data-table td:nth-child(4) { width: 25%; }
+        .data-table th:nth-child(5), .data-table td:nth-child(5) { width: 11%; }
+        .data-table th:nth-child(6), .data-table td:nth-child(6) { width: 8%; }
+        .data-table th:nth-child(7), .data-table td:nth-child(7) { width: 5%; }
+        .data-table th:nth-child(8), .data-table td:nth-child(8) { width: 8%; }
+        .data-table th:nth-child(9), .data-table td:nth-child(9) { width: 5%; }
+        .data-table th:nth-child(10),.data-table td:nth-child(10){ width: 8%; }
+        .data-table th:nth-child(11),.data-table td:nth-child(11){ width: 7%; text-align: center; }
+        
         .data-table tbody { display: block; max-height: 400px; overflow-y: auto; }
         .data-table thead, .data-table tbody tr { display: table; width: 100%; table-layout: fixed; }
-        .data-table tr:nth-child(even) { background-color: #f8f9fa; }
-        .data-table .actions-column { width: 80px; text-align: center; }
-        .form-group { position: relative; }
-        div.awesomplete > ul { position: absolute; background-color: white; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 2px; width: 100%; z-index: 9999; }
-        .floating-btn { position: fixed; padding: 12px 24px; background-color: #28a745; color: white; border: none; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); cursor: pointer; font-size: 1.1em; font-weight: bold; z-index: 1000; transition: transform 0.2s ease-in-out; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:nth-child(even) { background-color: #f7f9fc; }
+        .data-table .actions-column { text-align: center; }
+        
+        div.awesomplete > ul {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #cfd8dc;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 4px;
+            width: 100%;
+            z-index: 9999;
+            border-radius: 8px;
+        }
+        
+        div.awesomplete > ul > li { padding: 10px; }
+
+        .floating-btn {
+            position: fixed;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: white;
+            z-index: 1000;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         .floating-btn:hover { transform: scale(1.05); }
-        #backFloatingBtn { top: 20px; left: 20px; background-color: #6c757d; }
-        #historyFloatingBtn { top: 20px; right: 20px; }
-        #saveFloatingBtn { bottom: 20px; right: 20px; text-transform: uppercase; }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 1001; justify-content: center; align-items: center; padding: 15px; }
-        .modal-content { background-color: #fff; padding: 25px; border-radius: 8px; width: 100%; max-width: 600px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; max-height: 90vh; overflow-y: auto;}
-        .modal-close-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; color: #aaa; cursor: pointer; }
+        
+        #backFloatingBtn { top: 20px; left: 20px; background-color: #78909c; }
+        #historyFloatingBtn { top: 20px; right: 20px; background-color: #ffca28; color: #333; }
+        #saveFloatingBtn { bottom: 20px; right: 20px; background-color: #34a853; text-transform: uppercase; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close-btn {
+            position: absolute; top: 15px; right: 20px;
+            font-size: 28px; font-weight: bold; color: #aaa; cursor: pointer;
+        }
         .modal-close-btn:hover { color: #333; }
-        .history-controls { display: flex; gap: 10px; margin-top: 15px; }
-        .history-controls select { flex-grow: 1; padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
-        .history-controls button { padding: 8px 15px; border: none; border-radius: 4px; color: white; cursor: pointer; background-color: #d9534f; }
-        #gemini-analysis-content h3 { font-size: 1.2em; color: #2c3e50; margin-top: 15px; margin-bottom: 5px; border-bottom: 2px solid #e9ecef; padding-bottom: 5px;}
+
+        .history-controls { display: flex; gap: 10px; margin-top: 15px; align-items: center; }
+        .history-controls select { flex-grow: 1; }
+        .history-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-family: 'Kanit', sans-serif;
+            flex-shrink: 0; 
+        }
+        #loadHistoryBtn { background-color: #4285f4; }
+        #loadHistoryBtn:hover { background-color: #1a73e8; }
+        #deleteHistoryBtn { background-color: #d9534f; }
+        #deleteHistoryBtn:hover { background-color: #c9302c; }
+
+
+        #gemini-analysis-content h3 {
+            font-size: 1.2em; color: #1a73e8; margin-top: 15px; margin-bottom: 10px;
+            border-bottom: 2px solid #e3f2fd; padding-bottom: 8px;
+        }
         #gemini-analysis-content ul { list-style-position: inside; padding-left: 10px; }
         #gemini-analysis-content p { margin-bottom: 10px; }
-        .loader { width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: #FF3D00; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
+
         .loader-container { text-align: center; padding: 40px; }
+        .loader {
+            width: 48px; height: 48px;
+            border: 5px solid #e3f2fd;
+            border-bottom-color: #1a73e8;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <button id="backFloatingBtn" class="floating-btn">back</button>
-    <button id="historyFloatingBtn" class="floating-btn">History</button>
-    <button id="saveFloatingBtn" class="floating-btn">save</button>
+    <button id="backFloatingBtn" class="floating-btn">⬅ ย้อนกลับ</button>
+    <button id="historyFloatingBtn" class="floating-btn">📜 ประวัติ</button>
+    <button id="saveFloatingBtn" class="floating-btn">💾 บันทึก</button>
 
     <div id="historyModal" class="modal-overlay">
         <div class="modal-content">
@@ -76,6 +321,7 @@
             <p>เลือกประวัติที่ต้องการเพื่อโหลดข้อมูลลงในตาราง</p>
             <div class="history-controls">
                 <select id="historySelector"><option value="">— ไม่มีประวัติที่บันทึกไว้ —</option></select>
+                <button id="loadHistoryBtn" type="button">โหลดข้อมูล</button>
                 <button id="deleteHistoryBtn">ลบ</button>
             </div>
         </div>
@@ -95,14 +341,14 @@
     </div>
 
     <div class="container">
-        <h1>รายงานภาษีขาย</h1>
+        <h1>รายงานข้อมูลภาษีขาย</h1>
 
         <form id="taxDataForm">
             <div class="form-grid">
                 <div class="form-group"><label for="sequence">ลำดับ (No.):</label><input type="number" id="sequence" name="sequence" readonly></div>
                 <div class="form-group"><label for="date">วันที่ (Date):</label><input type="date" id="date" name="date" required></div>
                 <div class="form-group"><label for="documentNumber">เลขที่เอกสาร (Doc No.):</label><input type="text" id="documentNumber" name="documentNumber"></div>
-                <div class="form-group"><label for="companyName">ชื่อบริษัท (Company Name):</label><input type="text" id="companyName" name="companyName" required autocomplete="off" placeholder="เริ่มพิมพ์เพื่อค้นหา..."></div>
+                <div class="form-group"><label for="companyName">ชื่อบริษัท (Company Name):</label><input type="text" id="companyName" name="companyName" required autocomplete="off" placeholder="กำลังโหลดข้อมูลบริษัท..."></div>
                 <div class="form-group"><label for="taxId">เลขภาษี (Tax ID):</label><input type="text" id="taxId" name="taxId" pattern="\d{13}"></div>
                 <div class="form-group">
                     <label>สำนักงาน (Branch Type):</label>
@@ -117,13 +363,12 @@
                 <div class="form-group"><label for="productPrice">ราคาสินค้า (ก่อน VAT):</label><input type="number" id="productPrice" name="productPrice" step="0.01" required></div>
                 <div class="form-group"><label for="vatAmount">ภาษี (VAT):</label><input type="number" id="vatAmount" name="vatAmount" step="0.01"></div>
                 <div class="form-group"><label for="totalPrice">ราคารวม:</label><input type="number" id="totalPrice" name="totalPrice" step="0.01" required></div>
-                
             </div>
             
             <div class="form-actions">
                 <button type="reset">ล้างข้อมูล</button>
-                <button type="submit">เพิ่มข้อมูลลงตาราง</button>
-                <button type="button" id="exportCsvBtn" class="action-btn" style="background-color: #2b823d;">📄 ส่งออกเป็น Excel (CSV)</button>
+                <button type="submit">เพิ่มลงตาราง</button>
+                <button type="button" id="exportCsvBtn" class="action-btn export">📄 ส่งออก Excel</button>
             </div>
         </form>
 
@@ -155,80 +400,151 @@ document.addEventListener('DOMContentLoaded', function () {
     const productPriceInput = document.getElementById('productPrice');
     const vatAmountInput = document.getElementById('vatAmount');
     const totalPriceInput = document.getElementById('totalPrice');
-
-    let companyCache = [];
+    
+    let editingRow = null;
     let currentSequence = 1;
 
-    async function fetchCompanyData() {
-        try {
-            const response = await fetch('http://127.0.0.1:5000/api/companies');
-            if (!response.ok) {
-                throw new Error(`ไม่สามารถโหลดข้อมูลบริษัทได้: ${response.statusText}`);
-            }
-            companyCache = await response.json();
-            initializeAutocomplete();
-        } catch (error) {
-            console.error("เกิดข้อผิดพลาดตอน Fetch:", error);
-            companyNameInput.placeholder = "ผิดพลาด: ไม่สามารถโหลดข้อมูลได้";
-        }
+    // --- START: DATE FORMATTING FUNCTIONS ---
+    // NEW: Helper function to format date to DD/MM/YYYY for display
+    function formatDateToDMY(isoDate) {
+        if (!isoDate || !isoDate.includes('-')) return isoDate; // Return as is if invalid
+        const [year, month, day] = isoDate.split('-');
+        return `${day}/${month}/${year}`;
     }
 
-    function initializeAutocomplete() {
-        if (!window.Awesomplete || !companyCache || companyCache.length === 0) return;
+    // NEW: Helper function to format date back to YYYY-MM-DD for input fields
+    function formatDMYToISO(dmyDate) {
+        if (!dmyDate || !dmyDate.includes('/')) return dmyDate; // Return as is if invalid
+        const [day, month, year] = dmyDate.split('/');
+        return `${year}-${month}-${day}`;
+    }
+    // --- END: DATE FORMATTING FUNCTIONS ---
+
+    function initializeAutocomplete(companyData) {
+        if (!window.Awesomplete || !companyData || companyData.length === 0) {
+            console.warn("Awesomplete or company data is not available.");
+            companyNameInput.placeholder = "ไม่สามารถโหลดข้อมูลบริษัทได้";
+            return;
+        }
+
+        companyNameInput.placeholder = "เริ่มพิมพ์เพื่อค้นหา...";
         
-        const companyList = companyCache.map(c => ({
-            label: `${c.CompanyName} (${c.TaxID})`,
+        const companyList = companyData.map(c => ({
+            label: `${c.CompanyName} (TAX ID: ${c.TaxID})`,
             value: c.CompanyName
         }));
 
-        new Awesomplete(companyNameInput, {
-            list: companyList,
-            minChars: 1,
-            maxItems: 10,
-            filter: function(text, input) { return Awesomplete.FILTER_CONTAINS(text, input.match(/[^,]*$/)[0]); },
+        const awesompleteInstance = new Awesomplete(companyNameInput, {
+            list: companyList, minChars: 1, maxItems: 10,
+            filter: (text, input) => Awesomplete.FILTER_CONTAINS(text, input.match(/[^,]*$/)[0]),
             sort: false
         });
 
         companyNameInput.addEventListener('awesomplete-selectcomplete', function(event) {
-            const selectedCompanyName = event.text.value;
-            const selectedCompanyObject = companyCache.find(c => c.CompanyName === selectedCompanyName);
+            const selectedCompanyObject = companyData.find(c => c.CompanyName === event.text.value);
             if (selectedCompanyObject) {
                 taxIdInput.value = selectedCompanyObject.TaxID;
-                if (selectedCompanyObject.BranchType && selectedCompanyObject.BranchType.includes('สาขา')) {
+                if (selectedCompanyObject.BranchType === 'สาขา') {
                     branchSubRadio.checked = true;
                     branchNumberInput.value = selectedCompanyObject.BranchNo || '';
                 } else {
                     branchHeadOfficeRadio.checked = true;
-                    branchNumberInput.value = '';
                 }
                 toggleBranchNumberInput();
             }
         });
     }
-    
-    function updateSequence() {
-        const rowCount = dataTableBody.rows.length;
-        currentSequence = rowCount + 1;
-        sequenceInput.value = currentSequence;
-        const rows = dataTableBody.querySelectorAll('tr');
-        rows.forEach((row, index) => {
-            row.cells[0].textContent = index + 1;
+
+    async function fetchCompanyData() {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/api/companies');
+            if (!response.ok) throw new Error(`Connection to server failed: ${response.statusText}`);
+            const data = await response.json();
+            initializeAutocomplete(data);
+        } catch (error) {
+            console.error("Could not fetch company data:", error);
+            companyNameInput.placeholder = "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้";
+            initializeAutocomplete([]);
+        }
+    }
+
+    function addRowToTable(data) {
+        const newRow = dataTableBody.insertRow(editingRow ? editingRow.rowIndex - 1 : -1);
+        
+        // MODIFIED: Format the date before displaying it
+        newRow.innerHTML = `
+            <td>${data.sequence}</td>
+            <td>${formatDateToDMY(data.date)}</td>
+            <td>${data.documentNumber}</td>
+            <td>${data.companyName}</td> <td>${data.taxId}</td> <td>${data.branchType}</td>
+            <td>${data.branchNumber}</td> <td>${parseFloat(data.productPrice).toFixed(2)}</td>
+            <td>${parseFloat(data.vatAmount).toFixed(2)}</td> <td>${parseFloat(data.totalPrice).toFixed(2)}</td>
+            <td class="actions-column">
+                <button type="button" class="edit-btn">แก้ไข</button>
+                <button type="button" class="delete-btn">ลบ</button>
+            </td>`;
+
+        newRow.querySelector('.delete-btn').addEventListener('click', function() {
+            if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                newRow.remove();
+                updateSequence();
+            }
         });
+        
+        newRow.querySelector('.edit-btn').addEventListener('click', function() { handleEditRow(newRow); });
+
+        return newRow;
+    }
+    
+    function handleEditRow(row) {
+        if (editingRow) editingRow.style.backgroundColor = '';
+        editingRow = row;
+        const cells = row.querySelectorAll('td');
+        row.style.backgroundColor = '#fffbe6';
+        
+        // MODIFIED: Convert date from DD/MM/YYYY back to YYYY-MM-DD for the input field
+        document.getElementById('date').value = formatDMYToISO(cells[1].textContent);
+        document.getElementById('documentNumber').value = cells[2].textContent;
+        document.getElementById('companyName').value = cells[3].textContent;
+        document.getElementById('taxId').value = cells[4].textContent;
+        
+        if (cells[5].textContent === 'สาขา') {
+            branchSubRadio.checked = true;
+            document.getElementById('branchNumber').value = cells[6].textContent;
+        } else {
+            branchHeadOfficeRadio.checked = true;
+        }
+        toggleBranchNumberInput();
+        
+        document.getElementById('productPrice').value = cells[7].textContent;
+        document.getElementById('vatAmount').value = cells[8].textContent;
+        document.getElementById('totalPrice').value = cells[9].textContent;
+
+        const submitBtn = taxDataForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'บันทึกการแก้ไข';
+        submitBtn.style.backgroundColor = '#4285f4';
+        
+        taxDataForm.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('date').focus();
+    }
+
+    function updateSequence() {
+        const rows = dataTableBody.querySelectorAll('tr');
+        rows.forEach((row, index) => { row.cells[0].textContent = index + 1; });
+        currentSequence = rows.length + 1;
+        if (!editingRow) sequenceInput.value = currentSequence;
     }
 
     function toggleBranchNumberInput() {
         branchNumberInput.style.display = branchSubRadio.checked ? 'block' : 'none';
-        if (!branchSubRadio.checked) {
-            branchNumberInput.value = '';
-        }
+        if (!branchSubRadio.checked) branchNumberInput.value = '';
     }
     
     const vatRate = 0.07;
     function calculateFromPrice() {
         const price = parseFloat(productPriceInput.value) || 0;
-        const vat = parseFloat((price * vatRate).toFixed(2));
-        vatAmountInput.value = vat;
-        totalPriceInput.value = (price + vat).toFixed(2);
+        vatAmountInput.value = (price * vatRate).toFixed(2);
+        totalPriceInput.value = (price + parseFloat(vatAmountInput.value)).toFixed(2);
     }
 
     function calculateFromVAT() {
@@ -236,9 +552,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const price = parseFloat(productPriceInput.value) || 0;
         if (price > 0) {
             totalPriceInput.value = (price + vat).toFixed(2);
-        } else if (vat > 0 && vatRate > 0) {
-            const calculatedPrice = parseFloat((vat / vatRate).toFixed(2));
-            productPriceInput.value = calculatedPrice;
+        } else if (vat > 0) {
+            const calculatedPrice = vat / vatRate;
+            productPriceInput.value = calculatedPrice.toFixed(2);
             totalPriceInput.value = (calculatedPrice + vat).toFixed(2);
         }
     }
@@ -248,19 +564,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const rows = dataTableBody.querySelectorAll('tr');
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
-            const rowData = {
+            data.push({
                 sequence: cells[0].textContent,
-                date: cells[1].textContent,
+                // MODIFIED: When saving, keep the displayed DD/MM/YYYY format for consistency
+                date: cells[1].textContent, 
                 documentNumber: cells[2].textContent,
-                companyName: cells[3].textContent,
-                taxId: cells[4].textContent,
-                branchType: cells[5].textContent,
-                branchNumber: cells[6].textContent,
-                productPrice: cells[7].textContent,
-                vatAmount: cells[8].textContent,
+                companyName: cells[3].textContent, taxId: cells[4].textContent, branchType: cells[5].textContent,
+                branchNumber: cells[6].textContent, productPrice: cells[7].textContent, vatAmount: cells[8].textContent,
                 totalPrice: cells[9].textContent,
-            };
-            data.push(rowData);
+            });
         });
         return data;
     }
@@ -268,13 +580,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function populateTable(data) {
         dataTableBody.innerHTML = '';
         data.forEach(item => {
-            const newRow = dataTableBody.insertRow();
-            newRow.innerHTML = `<td>${item.sequence || ''}</td><td>${item.date || ''}</td><td>${item.documentNumber || ''}</td><td>${item.companyName || ''}</td><td>${item.taxId || ''}</td><td>${item.branchType || ''}</td><td>${item.branchNumber || ''}</td><td>${parseFloat(item.productPrice || 0).toFixed(2)}</td><td>${parseFloat(item.vatAmount || 0).toFixed(2)}</td><td>${parseFloat(item.totalPrice || 0).toFixed(2)}</td><td class="actions-column"><button type="button" class="delete-btn">ลบ</button></td>`;
-            newRow.querySelector('.delete-btn').addEventListener('click', function() {
-                if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
-                    newRow.remove();
-                    updateSequence();
-                }
+            // Data from history might be in DD/MM/YYYY, so we convert it to ISO before adding,
+            // then addRowToTable will convert it back to DD/MM/YYYY for display. This ensures consistency.
+            const dateInISO = formatDMYToISO(item.date);
+            addRowToTable({
+                ...item,
+                date: dateInISO
             });
         });
         updateSequence();
@@ -287,79 +598,84 @@ document.addEventListener('DOMContentLoaded', function () {
     
     taxDataForm.addEventListener('submit', function (event) { 
         event.preventDefault(); 
-        const data = new FormData(taxDataForm); 
-        const newRow = dataTableBody.insertRow(); 
-        newRow.innerHTML = `<td>${currentSequence}</td><td>${data.get('date')}</td><td>${data.get('documentNumber')}</td><td>${data.get('companyName')}</td><td>${data.get('taxId')}</td><td>${data.get('branchType')}</td><td>${data.get('branchType') === 'สาขา' ? data.get('branchNumber') : '-'}</td><td>${parseFloat(data.get('productPrice')).toFixed(2)}</td><td>${parseFloat(data.get('vatAmount')).toFixed(2)}</td><td>${parseFloat(data.get('totalPrice')).toFixed(2)}</td><td class="actions-column"><button type="button" class="delete-btn">ลบ</button></td>`; 
-        newRow.querySelector('.delete-btn').addEventListener('click', function() { 
-            if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
-                newRow.remove();
-                updateSequence();
-            }
-        }); 
-        taxDataForm.reset(); 
-        updateSequence(); 
-        toggleBranchNumberInput(); 
-        document.getElementById('date').focus(); 
+        const formData = new FormData(taxDataForm);
+        const data = {
+            date: formData.get('date'), documentNumber: formData.get('documentNumber'),
+            companyName: formData.get('companyName'), taxId: formData.get('taxId'),
+            branchType: formData.get('branchType'),
+            branchNumber: formData.get('branchType') === 'สาขา' ? formData.get('branchNumber') : '-',
+            productPrice: formData.get('productPrice'), vatAmount: formData.get('vatAmount'),
+            totalPrice: formData.get('totalPrice'),
+        };
+
+        if (editingRow) {
+            const cells = editingRow.querySelectorAll('td');
+            // MODIFIED: Format date on edit save
+            cells[1].textContent = formatDateToDMY(data.date);
+            cells[2].textContent = data.documentNumber;
+            cells[3].textContent = data.companyName;
+            cells[4].textContent = data.taxId;
+            cells[5].textContent = data.branchType;
+            cells[6].textContent = data.branchNumber;
+            cells[7].textContent = parseFloat(data.productPrice).toFixed(2);
+            cells[8].textContent = parseFloat(data.vatAmount).toFixed(2);
+            cells[9].textContent = parseFloat(data.totalPrice).toFixed(2);
+            editingRow.style.backgroundColor = '';
+            taxDataForm.reset();
+        } else {
+            data.sequence = currentSequence;
+            addRowToTable(data);
+            taxDataForm.reset();
+        }
     });
 
-    taxDataForm.addEventListener('reset', function() { 
+    taxDataForm.addEventListener('reset', function() {
+        if (editingRow) {
+            editingRow.style.backgroundColor = '';
+            editingRow = null;
+        }
+        const submitBtn = taxDataForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'เพิ่มลงตาราง';
+        submitBtn.style.backgroundColor = '#34a853';
+
         setTimeout(() => {
             toggleBranchNumberInput();
             updateSequence();
         }, 0); 
     });
 
-    const loadDataInput = document.getElementById('loadDataInput');
     const exportCsvBtn = document.getElementById('exportCsvBtn');
-    const printOfficialReportBtn = document.getElementById('printOfficialReportBtn');
-
-    if (loadDataInput) {
-        loadDataInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    populateTable(data);
-                    alert(`โหลดข้อมูลสำเร็จ ${data.length} รายการ`);
-                } catch (error) {
-                    alert('ไฟล์ไม่ถูกต้อง หรือเสียหาย');
-                    console.error("Error parsing JSON:", error);
-                }
-            };
-            reader.readAsText(file);
-            loadDataInput.value = '';
-        });
-    }
-
     exportCsvBtn.addEventListener('click', function() {
-        const data = getTableData();
-        if (data.length === 0) { alert('ไม่มีข้อมูลในตารางให้ส่งออก'); return; }
+        const data = getTableData(); // getTableData already returns dates in DD/MM/YYYY
+        if (data.length === 0) {
+            alert('ไม่มีข้อมูลในตารางให้ส่งออก');
+            return;
+        }
         const headers = ["ลำดับ", "วันที่", "เลขที่เอกสาร", "ชื่อบริษัท", "เลขภาษี", "สำนักงาน", "สาขาที่", "ราคาสินค้า", "ภาษี", "ราคารวม"];
         let csvContent = "\uFEFF";
         csvContent += headers.join(',') + '\r\n';
         data.forEach(row => {
-            const rowArray = Object.values(row).map(val => `"${val}"`);
+            const rowArray = Object.values(row).map(val => `"${String(val).replace(/"/g, '""')}"`);
             csvContent += rowArray.join(',') + '\r\n';
         });
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `tax_export_${new Date().toISOString().slice(0,10)}.csv`;
+        a.download = `tax_export_${new Date().toISOString().slice(0, 10)}.csv`;
         a.click();
         URL.revokeObjectURL(url);
     });
     
-    // History & Floating Buttons System
-    const backFloatingBtn = document.getElementById('backFloatingBtn');
-    const historyFloatingBtn = document.getElementById('historyFloatingBtn');
-    const saveFloatingBtn = document.getElementById('saveFloatingBtn');
+    // --- HISTORY SYSTEM ---
     const historyModal = document.getElementById('historyModal');
     const closeHistoryModalBtn = document.getElementById('closeHistoryModalBtn');
     const historySelector = document.getElementById('historySelector');
     const deleteHistoryBtn = document.getElementById('deleteHistoryBtn');
+    const loadHistoryBtn = document.getElementById('loadHistoryBtn');
+    const saveFloatingBtn = document.getElementById('saveFloatingBtn');
+    const historyFloatingBtn = document.getElementById('historyFloatingBtn');
+    const backFloatingBtn = document.getElementById('backFloatingBtn');
     const STORAGE_KEY_INDEX = 'taxAppHistoryIndex';
     const STORAGE_KEY_PREFIX = 'taxAppHistoryData_';
 
@@ -367,11 +683,12 @@ document.addEventListener('DOMContentLoaded', function () {
         historySelector.innerHTML = '';
         const index = JSON.parse(localStorage.getItem(STORAGE_KEY_INDEX)) || [];
         if (index.length === 0) { historySelector.innerHTML = '<option value="">— ไม่มีประวัติที่บันทึกไว้ —</option>'; return; }
+        index.sort((a, b) => b.key.localeCompare(a.key));
         index.forEach(item => { const option = document.createElement('option'); option.value = item.key; option.textContent = item.name; historySelector.appendChild(option); });
     }
 
     function saveCurrentDataToHistory() {
-        const dataToSave = getTableData();
+        const dataToSave = getTableData(); // This now saves dates as DD/MM/YYYY
         if (dataToSave.length === 0) { alert('ยังไม่มีข้อมูลในตารางให้บันทึก (save)'); return; }
         const historyName = prompt('กรุณาตั้งชื่อสำหรับประวัติชุดนี้:', `ข้อมูลวันที่ ${new Date().toLocaleDateString('th-TH')}`);
         if (!historyName) return;
@@ -387,11 +704,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function loadSelectedHistory() {
         const selectedKey = historySelector.value;
-        if (!selectedKey) return;
+        if (!selectedKey) { alert('กรุณาเลือกประวัติที่ต้องการโหลด'); return; }
         const dataString = localStorage.getItem(selectedKey);
         if (dataString) {
             const data = JSON.parse(dataString);
-            populateTable(data);
+            populateTable(data); // populateTable now handles converting date formats
             const selectedName = historySelector.options[historySelector.selectedIndex].text;
             alert(`โหลดข้อมูลจากประวัติ "${selectedName}" สำเร็จ`);
             historyModal.style.display = 'none';
@@ -417,96 +734,14 @@ document.addEventListener('DOMContentLoaded', function () {
     historyFloatingBtn.addEventListener('click', () => { loadHistoryDropdown(); historyModal.style.display = 'flex'; });
     closeHistoryModalBtn.addEventListener('click', () => { historyModal.style.display = 'none'; });
     window.addEventListener('click', (event) => { if (event.target == historyModal) { historyModal.style.display = 'none'; } });
-    historySelector.addEventListener('change', loadSelectedHistory);
+    
+    loadHistoryBtn.addEventListener('click', loadSelectedHistory);
     deleteHistoryBtn.addEventListener('click', deleteSelectedHistory);
-
-    // === Gemini API Analysis System ===
-    const geminiAnalyzeBtn = document.getElementById('geminiAnalyzeBtn');
+    
+    // --- Other Systems ---
     const geminiAnalysisModal = document.getElementById('geminiAnalysisModal');
     const closeGeminiModalBtn = document.getElementById('closeGeminiModalBtn');
-    const geminiAnalysisContent = document.getElementById('gemini-analysis-content');
     
-    function markdownToHtml(text) {
-        let html = text
-            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-            .replace(/^\* (.*$)/gim, '<li>$1</li>')
-            .replace(/\*\*(.*)\*\*/gim, '<b>$1</b>')
-            .replace(/\*(.*)\*/gim, '<i>$1</i>');
-        
-        html = html.replace(/(\r\n|\n|\r)/gm, '<br>');
-        
-        if(html.includes('<li>')){
-            let listItems = html.match(/<li>.*?<\/li>/g).join('');
-            let nonListItems = html.replace(/<li>.*?<\/li>/g, '').replace(/(<br>)+/g, '<br>');
-            html = `<ul>${listItems}</ul>${nonListItems}`;
-        }
-        
-        return html.replace(/<\/li><br>/g, '</li>').replace(/<br><ul>/g, '<ul>');
-    }
-
-    async function analyzeTaxDataWithGemini() {
-        const tableData = getTableData();
-        if (tableData.length === 0) {
-            alert('ไม่มีข้อมูลในตารางสำหรับวิเคราะห์');
-            return;
-        }
-
-        geminiAnalysisContent.innerHTML = `<div class="loader-container"><span class="loader"></span><p>กำลังวิเคราะห์ข้อมูล... โปรดรอสักครู่</p></div>`;
-        geminiAnalysisModal.style.display = 'flex';
-        
-        const prompt = `Analyze the following tax data from an HTML table. The data is provided as a JSON array.
-
-Data:
-${JSON.stringify(tableData, null, 2)}
-
-Based on this data, provide a summary and analysis in THAI language. Your response must be in simple Markdown format and include the following sections exactly as named:
-- ### สรุปยอดรวม
-- ### รายการที่น่าสนใจ
-- ### ข้อเสนอแนะ
-- ### ภาพรวม
-
-For "สรุปยอดรวม", calculate the total product price (ราคารวมก่อน VAT) and total VAT (ภาษีรวม).
-For "รายการที่น่าสนใจ", identify the company with the highest total purchase value.
-For "ข้อเสนอแนะ", point out potential data entry issues like missing document numbers.
-For "ภาพรวม", provide a brief, one-paragraph summary of the data.`;
-        
-        try {
-            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = { contents: chatHistory };
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            
-            if (!response.ok) {
-                 throw new Error(`API call failed with status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.candidates && result.candidates.length > 0 &&
-                result.candidates[0].content && result.candidates[0].content.parts &&
-                result.candidates[0].content.parts.length > 0) {
-                const text = result.candidates[0].content.parts[0].text;
-                geminiAnalysisContent.innerHTML = markdownToHtml(text);
-            } else {
-                geminiAnalysisContent.innerHTML = '<p>ไม่สามารถรับผลการวิเคราะห์ได้ในขณะนี้ โปรดลองอีกครั้ง</p>';
-                console.error("Unexpected API response structure:", result);
-            }
-        } catch (error) {
-            console.error("Error calling Gemini API:", error);
-            geminiAnalysisContent.innerHTML = `<p>เกิดข้อผิดพลาดในการเชื่อมต่อกับ Gemini API: ${error.message}</p>`;
-        }
-    }
-    if (geminiAnalyzeBtn) {
-        geminiAnalyzeBtn.addEventListener('click', analyzeTaxDataWithGemini);
-    }
     if (closeGeminiModalBtn) {
         closeGeminiModalBtn.addEventListener('click', () => { geminiAnalysisModal.style.display = 'none'; });
     }
@@ -516,15 +751,12 @@ For "ภาพรวม", provide a brief, one-paragraph summary of the data.`;
         }
     });
 
-    
-       
-
     // === INITIAL PAGE LOAD ACTIONS ===
-    fetchCompanyData(); 
     updateSequence();
     toggleBranchNumberInput();
     document.getElementById('date').focus();
     loadHistoryDropdown();
+    fetchCompanyData();
 
 });
 </script>

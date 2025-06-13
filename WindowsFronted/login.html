@@ -120,46 +120,41 @@
                 const loginApiUrl = 'http://localhost:3001/api/auth/login';
 
                 try {
-                    console.log(`Attempting to login user: ${username} to ${loginApiUrl}`);
-                    const response = await fetch(loginApiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ username, password })
-                    });
+    console.log(`Attempting to login user: ${username} to ${loginApiUrl}`);
+    const response = await fetch(loginApiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    });
 
-                    const responseData = await response.json(); // พยายามอ่าน JSON เสมอ
+    const responseData = await response.json();
 
-                    if (!response.ok) {
-                        // Server ตอบกลับมาพร้อม error (เช่น 400, 401, 500)
-                        throw new Error(responseData.message || `Login failed with status: ${response.status}`);
-                    }
+    if (!response.ok) {
+        throw new Error(responseData.message || `Login failed with status: ${response.status}`);
+    }
 
-                    // ---- เมื่อ Login สำเร็จ (ตามการตอบกลับจาก API) ----
-                    console.log('Login successful:', responseData);
+    // ---- เมื่อ Login สำเร็จ ----
+    console.log('Login successful:', responseData);
 
-                    // 1. เก็บ Token หรือข้อมูล Session (ถ้า API ส่งมา)
-                    // ตัวอย่าง: localStorage.setItem('authToken', responseData.token);
-                    //         localStorage.setItem('userId', responseData.userId);
+    // 1. เก็บ Token และข้อมูลผู้ใช้ที่จำเป็นลงใน localStorage
+    localStorage.setItem('authToken', responseData.token); // **สำคัญมาก**
+    localStorage.setItem('userId', responseData.userId);
+    localStorage.setItem('userName', responseData.username);
 
-                    // 2. ตั้งค่าสถานะการล็อกอินสำหรับ UI (อาจจะใช้ token แทนในระบบจริง)
-                    localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('userName', responseData.username || username); // เก็บชื่อผู้ใช้
+    // 2. ตั้งค่าสถานะ (เผื่อยังต้องใช้)
+    localStorage.setItem('isLoggedIn', 'true');
 
-                    // 3. Redirect ไปหน้า menu หรือหน้าหลัก
-                    alert('เข้าสู่ระบบสำเร็จ!');
-                    window.location.href = 'menu.html'; // หรือหน้า dashboard ที่ต้องการ
+    // 3. Redirect ไปหน้า menu
+    alert('เข้าสู่ระบบสำเร็จ!');
+    window.location.href = 'menu.html'; // หรือหน้า dashboard ที่ต้องการ
 
-                } catch (error) {
-                    console.error('Login error:', error);
-                    // แสดงข้อความ error ที่ user-friendly
-                    errorMessageElement.textContent = error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง';
-                    if (error.message.includes("Failed to fetch")) {
-                        errorMessageElement.textContent = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่อ หรือติดต่อผู้ดูแลระบบ';
-                    }
-                    errorMessageElement.style.display = 'block';
-                }
+} catch (error) {
+    console.error('Login error:', error);
+    errorMessageElement.textContent = error.message.includes("Failed to fetch")
+        ? 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบว่า Server ทำงานอยู่'
+        : error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
+    errorMessageElement.style.display = 'block';
+}
             });
         });
     </script>

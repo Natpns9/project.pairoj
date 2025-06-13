@@ -1,101 +1,84 @@
-// login.js (สำหรับใช้ใน menu.html และหน้าที่ต้องการแสดงสถานะ login/logout UI)
-
 document.addEventListener('DOMContentLoaded', function() {
-    // แสดงปีปัจจุบันใน Footer (ถ้ามี element #currentYear ในหน้านั้น)
-    const currentYearSpan = document.getElementById('currentYear');
-    if (currentYearSpan) {
-        currentYearSpan.textContent = new Date().getFullYear();
+    // --- ตั้งค่าปีปัจจุบันใน Footer ---
+    const currentYearElement = document.getElementById('currentYear');
+    if (currentYearElement) {
+        currentYearElement.textContent = new Date().getFullYear();
     }
 
-    // ส่วนจัดการการแสดงผล User Auth/Profile
+    // --- ตรวจสอบสถานะการล็อกอิน ---
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const userName = localStorage.getItem('userName');
+    
     const userAuthSection = document.getElementById('userAuthSection');
     const userProfileSection = document.getElementById('userProfileSection');
     const logoutLink = document.getElementById('logoutLink');
-    // หา .user-profile ที่อยู่ภายใน userProfileSection เพื่อแสดงชื่อย่อ
-    const userProfileDiv = userProfileSection ? userProfileSection.querySelector('.user-profile') : null;
+    const actionButtons = document.querySelectorAll('.action-buttons .btn');
 
-    function updateLoginStateUI() {
-        // ในระบบจริง: ควรมีการเรียก API เพื่อตรวจสอบสถานะ session/token ที่ถูกต้อง
-        // หรือตรวจสอบความ valid ของ token ที่เก็บไว้
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        const userName = localStorage.getItem('userName'); // ดึงชื่อผู้ใช้ที่อาจเก็บไว้ตอน login
-
-        if (isLoggedIn) {
-            if (userAuthSection) {
-                userAuthSection.style.display = 'none';
-            }
-            if (userProfileSection) {
-                userProfileSection.style.display = 'flex'; // หรือ 'block' หรือตาม CSS ที่คุณใช้
-            }
-            if (userProfileDiv && userName) {
-                // แสดงอักษรตัวแรกของชื่อผู้ใช้เป็นตัวพิมพ์ใหญ่
-                userProfileDiv.textContent = userName.charAt(0).toUpperCase();
-            } else if (userProfileDiv) {
-                userProfileDiv.textContent = 'U'; // Default placeholder
-            }
-        } else {
-            if (userAuthSection) {
-                userAuthSection.style.display = 'flex'; // หรือ 'block'
-            }
-            if (userProfileSection) {
-                userProfileSection.style.display = 'none';
-            }
+    if (isLoggedIn && userName) {
+        // --- กรณี: ล็อกอินแล้ว ---
+        
+        // 1. ซ่อนลิงก์ "เข้าสู่ระบบ / สมัครสมาชิก"
+        if (userAuthSection) userAuthSection.style.display = 'none';
+        
+        // 2. แสดงส่วนโปรไฟล์และปุ่ม "ออกจากระบบ"
+        if (userProfileSection) {
+            userProfileSection.style.display = 'flex';
+            // แสดงตัวอักษรแรกของชื่อผู้ใช้ในไอคอนโปรไฟล์
+            userProfileSection.querySelector('.user-profile').textContent = userName.charAt(0).toUpperCase();
         }
-    }
-
-    if (logoutLink) {
-        logoutLink.addEventListener('click', async function(event) {
-            event.preventDefault();
-
-            // --- ส่วนนี้จะต้องเรียก API Logout ที่คุณจะสร้างใน server.js ---
-            // Endpoint นี้เป็นตัวอย่าง คุณต้องสร้างมันใน server.js
-            const logoutApiUrl = 'http://localhost:3001/api/auth/logout';
-
-            try {
-                console.log(`Attempting to logout via API: ${logoutApiUrl}`);
-                // const authToken = localStorage.getItem('authToken'); // ถ้ามีการใช้ token
-                // const response = await fetch(logoutApiUrl, {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //         // 'Authorization': `Bearer ${authToken}` // ถ้า API ต้องการ token
-                //     }
-                // });
-
-                // if (!response.ok) {
-                //     const errorData = await response.json().catch(() => ({}));
-                //     throw new Error(errorData.message || `Logout failed with status: ${response.status}`);
-                // }
-
-                // console.log('Logout API call successful'); // เมื่อ API ตอบกลับมาว่าสำเร็จ
-
-            } catch (error) {
-                console.error('Logout API error:', error);
-                // อาจจะแจ้งผู้ใช้หรือไม่ก็ได้ เพราะยังไงก็จะเคลียร์ฝั่ง client อยู่ดี
+        
+        // 3. ตั้งค่าการทำงานให้ปุ่ม "ออกจากระบบ"
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function(event) {
+                event.preventDefault();
+                // ล้างข้อมูลการล็อกอินทั้งหมด
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userName');
+                localStorage.removeItem('userId');
+                
+                // แจ้งเตือนและกลับไปหน้าหลัก
+                alert('ออกจากระบบสำเร็จ');
+                window.location.href = 'menu.html';
+            });
+        }
+        
+        // 4. (ตรวจสอบ) ทำให้แน่ใจว่าปุ่มใช้งานได้
+        actionButtons.forEach(button => {
+            button.classList.remove('disabled');
+            // ตรวจสอบว่ามี data-href เก็บไว้หรือไม่ ถ้ามีให้ใส่กลับเข้าไป
+            if (button.dataset.href) {
+                button.href = button.dataset.href;
             }
-
-            // เคลียร์ข้อมูลการล็อกอินฝั่ง Client เสมอ ไม่ว่า API call จะสำเร็จหรือไม่
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userName');
-            // localStorage.removeItem('authToken'); // ถ้ามีการใช้ token
-
-            alert('คุณออกจากระบบแล้ว');
-            updateLoginStateUI(); // อัปเดต UI ทันที
-
-            // (ทางเลือก) Redirect ไปหน้า login หรือหน้าหลัก
-            // window.location.href = 'login.html';
         });
-    }
 
-    // เรียกเพื่ออัปเดต UI เมื่อหน้าโหลดครั้งแรก
-    updateLoginStateUI();
+    } else {
+        // --- กรณี: ยังไม่ได้ล็อกอิน ---
 
-    // (ทางเลือก) เพิ่ม event listener เพื่อตรวจจับการเปลี่ยนแปลงใน localStorage จาก tab อื่น
-    // เพื่อให้ UI อัปเดตตรงกัน (ถ้ามีการล็อกอิน/ล็อกเอาท์จาก tab อื่น)
-    window.addEventListener('storage', function(event) {
-        if (event.key === 'isLoggedIn' || event.key === 'userName') {
-            console.log('Storage event detected, updating UI.');
-            updateLoginStateUI();
+        // 1. แสดงลิงก์ "เข้าสู่ระบบ / สมัครสมาชิก" (ตามค่าเริ่มต้น)
+        if (userAuthSection) userAuthSection.style.display = 'flex';
+        if (userProfileSection) userProfileSection.style.display = 'none';
+
+        // 2. ปิดการใช้งานปุ่มระบบภาษีทั้งหมด
+        actionButtons.forEach(button => {
+            // เก็บ URL เดิมไว้ใน data attribute
+            button.dataset.href = button.getAttribute('href');
+            // ลบ URL ออกจากปุ่ม ทำให้คลิกไม่ได้
+            button.removeAttribute('href');
+            // เพิ่ม class 'disabled' เพื่อให้เราสามารถใส่สไตล์ให้มันดูเหมือนถูกปิดใช้งาน
+            button.classList.add('disabled');
+        });
+
+        // 3. (ทางเลือก) เพิ่มข้อความแจ้งเตือน
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            const warningMessage = document.createElement('p');
+            warningMessage.textContent = 'กรุณาเข้าสู่ระบบเพื่อใช้งานระบบยื่นภาษีออนไลน์';
+            warningMessage.style.textAlign = 'center';
+            warningMessage.style.color = '#d9534f';
+            warningMessage.style.marginTop = '20px';
+            warningMessage.style.fontWeight = 'bold';
+            mainContent.appendChild(warningMessage);
         }
-    });
+    }
 });
