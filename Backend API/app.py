@@ -1,7 +1,8 @@
 # File: app.py
-# This is the final, corrected version that connects to your SQL Server database.
-# It correctly fetches company name, tax ID, and branch information.
+# This is the final, corrected version ready for deployment on Render.
+# It uses Environment Variables for security.
 
+import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 import pyodbc
@@ -11,20 +12,19 @@ app = Flask(__name__)
 # This line is crucial for allowing the HTML file to access the API
 CORS(app) 
 
-# --- 2. Database Connection Details ---
-# These details are from your file.
-SERVER_NAME = 'PairojS2'
-DATABASE_NAME = 'SSalakDB'
-USERNAME = 'sa'
-PASSWORD = 'Abc1234'
+# --- 2. Database Connection Details (Loaded from Environment Variables) ---
+# These will be set in the Render dashboard, not in the code.
+SERVER_NAME = os.environ.get('DB_SERVER')
+DATABASE_NAME = os.environ.get('DB_NAME')
+USERNAME = os.environ.get('DB_USER')
+PASSWORD = os.environ.get('DB_PASS')
 TABLE_NAME = 'dbo.SClient'
 
 # --- 3. Correct Column Names ---
-# Based on our investigation, these are the correct column names.
 COL_CNAME = 'Cname'
 COL_TAXID = 'Taxid'
-COL_BRANCH_TYPE = 'Abbre'  # This column seems to hold "สำนักงานใหญ่" or "สาขา"
-COL_BRANCH_NO = 'Pkey'     # This column seems to hold the branch number
+COL_BRANCH_TYPE = 'Abbre'
+COL_BRANCH_NO = 'Pkey'
 
 # Create the connection string for SQL Server
 connection_string = (
@@ -46,16 +46,14 @@ def get_companies_from_db():
         cnxn = pyodbc.connect(connection_string)
         cursor = cnxn.cursor()
 
-        # --- 4. Corrected SQL Query ---
-        # Select all necessary columns from the client table
+        # --- 4. SQL Query ---
         query = f"SELECT {COL_CNAME}, {COL_TAXID}, {COL_BRANCH_TYPE}, {COL_BRANCH_NO} FROM {TABLE_NAME}"
         cursor.execute(query)
         rows = cursor.fetchall()
 
         # Process each row from the database
         for row in rows:
-            # --- 5. Correctly map database columns to JSON fields ---
-            # Use getattr to safely access attributes and provide default values
+            # --- 5. Map database columns to JSON fields ---
             companies.append({
                 "CompanyName": getattr(row, COL_CNAME, '').strip() if getattr(row, COL_CNAME) else '',
                 "TaxID": getattr(row, COL_TAXID, '').strip() if getattr(row, COL_TAXID) else '',
@@ -79,9 +77,5 @@ def get_companies():
     """
     return jsonify(get_companies_from_db())
 
-if __name__ == '__main__':
-    # Run the Flask app
-    # host='0.0.0.0' makes it accessible from your local network
-    # debug=True provides helpful error messages during development
-    app.run(host='0.0.0.0', port=5000, debug=True)
-
+# Note: The if __name__ == '__main__': block has been removed 
+# as Render uses Gunicorn to run the app.
