@@ -1,6 +1,4 @@
 # File: app.py
-# This is the final, corrected version ready for deployment on Render.
-# It uses Environment Variables for security.
 
 import os
 from flask import Flask, jsonify
@@ -8,74 +6,108 @@ from flask_cors import CORS
 import pyodbc
 
 # --- 1. Initialize Flask App and Enable CORS ---
+# ส่วนนี้ถูกต้องแล้ว ไม่ต้องแก้ไข
 app = Flask(__name__)
-# This line is crucial for allowing the HTML file to access the API
 CORS(app) 
 
-# --- 2. Database Connection Details (Loaded from Environment Variables) ---
-# These will be set in the Render dashboard, not in the code.
-SERVER_NAME = os.environ.get('DB_SERVER')
-DATABASE_NAME = os.environ.get('DB_NAME')
-USERNAME = os.environ.get('DB_USER')
-PASSWORD = os.environ.get('DB_PASS')
-TABLE_NAME = 'dbo.SClient'
+# --- (จุดสำคัญที่ต้องแก้ไข) ---
+# --- 2. กรุณากรอกรายละเอียดการเชื่อมต่อฐานข้อมูลของคุณ ---
+# ให้แทนที่ค่าในเครื่องหมายคำพูด ("...") ด้วยข้อมูลจริงของคุณ
+# คุณสามารถหา Server Name ได้จากโปรแกรม SQL Server Management Studio (SSMS) ตอนที่คุณเชื่อมต่อ
+SERVER_NAME = "pairojs2"  # <--- แก้ไขตรงนี้!! เช่น "DESKTOP-ABC\SQLEXPRESS" หรือ "192.168.1.5"
+DATABASE_NAME = "SSalakDB"             # <--- ตรวจสอบชื่อฐานข้อมูล
+USERNAME = "sa"                        # <--- ตรวจสอบชื่อผู้ใช้
+PASSWORD = "Abc1234"                   # <--- ตรวจสอบรหัสผ่าน
+# --- (จบส่วนที่ต้องแก้ไข) ---
 
-# --- 3. Correct Column Names ---
+
+# --- 3. ตรวจสอบชื่อตารางและคอลัมน์ ---
+# ค่าเหล่านี้ต้องตรงกับชื่อในฐานข้อมูลของคุณทุกตัวอักษร
+TABLE_NAME = 'dbo.SClient'
 COL_CNAME = 'Cname'
 COL_TAXID = 'Taxid'
-COL_BRANCH_TYPE = 'Abbre'
-COL_BRANCH_NO = 'Pkey'
+COL_BRANCH_TYPE = 'Abbre' # ในโค้ดเก่าคือ 'Pkey' ซึ่งอาจไม่ถูกต้องสำหรับประเภทสาขา
+COL_BRANCH_NO = 'Pkey'    # ในโค้ดเก่าคือ 'Abbre' ซึ่งอาจไม่ถูกต้องสำหรับเลขที่สาขา
 
-# Create the connection string for SQL Server
+
+# --- 4. สร้าง Connection String (ส่วนนี้จะทำงานอัตโนมัติ ไม่ต้องแก้ไข) ---
 connection_string = (
     f"DRIVER={{ODBC Driver 17 for SQL Server}};"
     f"SERVER={SERVER_NAME};"
     f"DATABASE={DATABASE_NAME};"
     f"UID={USERNAME};"
     f"PWD={PASSWORD};"
+    f"TrustServerCertificate=yes;"
 )
 
 def get_companies_from_db():
     """
-    Connects to the SQL Server database, fetches all client data,
-    and formats it into a list of dictionaries.
+    เชื่อมต่อฐานข้อมูลและดึงข้อมูลบริษัท
     """
     companies = []
     try:
-        # Establish a connection to the database
+        # ตรวจสอบว่าได้กรอกข้อมูลครบถ้วนหรือไม่
+        if "YOUR_SERVER_NAME_HERE" in SERVER_NAME:
+            raise ValueError("กรุณาแก้ไข SERVER_NAME ในไฟล์ app.py ก่อนรัน")
+
+        # เริ่มการเชื่อมต่อ
         cnxn = pyodbc.connect(connection_string)
         cursor = cnxn.cursor()
 
-        # --- 4. SQL Query ---
+        # สร้างและรันคำสั่ง SQL
         query = f"SELECT {COL_CNAME}, {COL_TAXID}, {COL_BRANCH_TYPE}, {COL_BRANCH_NO} FROM {TABLE_NAME}"
         cursor.execute(query)
         rows = cursor.fetchall()
 
-        # Process each row from the database
+        # จัดรูปแบบข้อมูลสำหรับส่งให้ Frontend
         for row in rows:
-            # --- 5. Map database columns to JSON fields ---
+            # ใช้ getattr เพื่อป้องกัน Error หากคอลัมน์ไม่มีข้อมูล (NULL)
+            company_name = getattr(row, COL_CNAME, '')
+            tax_id = getattr(row, COL_TAXID, '')
+            branch_type = getattr(row, COL_BRANCH_TYPE, '')
+            branch_no = getattr(row, COL_BRANCH_NO, '')
+
             companies.append({
-                "CompanyName": getattr(row, COL_CNAME, '').strip() if getattr(row, COL_CNAME) else '',
-                "TaxID": getattr(row, COL_TAXID, '').strip() if getattr(row, COL_TAXID) else '',
-                "BranchType": getattr(row, COL_BRANCH_TYPE, 'สำนักงานใหญ่').strip() if getattr(row, COL_BRANCH_TYPE) else 'สำนักงานใหญ่',
-                "BranchNo": getattr(row, COL_BRANCH_NO, '').strip() if getattr(row, COL_BRANCH_NO) else ''
+                "CompanyName": company_name.strip() if company_name else '',
+                "TaxID": tax_id.strip() if tax_id else '',
+                # แปลงค่า Abbre เป็น 'สำนักงานใหญ่' หรือ 'สาขา'
+                "BranchType": 'สาขา' if 'สาขา' in (branch_type or '') else 'สำนักงานใหญ่',
+                "BranchNo": branch_no.strip() if branch_no else ''
             })
             
-        # Close the connection
         cnxn.close()
-        print(f"✅ (Backend) Successfully fetched {len(companies)} companies from the database.")
+        print(f"✅ (Backend) ดึงข้อมูลสำเร็จ: {len(companies)} รายการ")
+        return companies, None
+
+    except pyodbc.Error as ex:
+        # จัดการ Error จาก pyodbc โดยเฉพาะ
+        sqlstate = ex.args[0]
+        error_message = f"Database Error: {sqlstate} - {ex}"
+        print(f"❌ (Backend) เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล: {error_message}")
+        return [], error_message
     except Exception as e:
-        # Print any error that occurs during the process
-        print(f"❌ (Backend) An error occurred: {e}")
-    
-    return companies
+        # จัดการ Error ทั่วไป
+        error_message = str(e)
+        print(f"❌ (Backend) เกิดข้อผิดพลาด: {error_message}")
+        return [], error_message
 
 @app.route('/api/companies', methods=['GET'])
 def get_companies():
     """
-    API endpoint that returns the company list in JSON format.
+    API endpoint สำหรับให้หน้าเว็บเรียกข้อมูล
     """
-    return jsonify(get_companies_from_db())
+    companies, error = get_companies_from_db()
 
-# Note: The if __name__ == '__main__': block has been removed 
-# as Render uses Gunicorn to run the app.
+    if error:
+        # หากมี Error เกิดขึ้น จะส่งข้อความแจ้งเตือนกลับไป
+        return jsonify({
+            "error": "ไม่สามารถดึงข้อมูลจากฐานข้อมูลได้",
+            "details": error
+        }), 500
+    
+    # หากสำเร็จ จะส่งข้อมูลบริษัทกลับไป
+    return jsonify(companies)
+
+if __name__ == '__main__':
+    # รันเซิร์ฟเวอร์ที่ Port 5000 และเปิด Debug Mode
+    app.run(debug=True, port=5000)

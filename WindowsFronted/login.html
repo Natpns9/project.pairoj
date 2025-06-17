@@ -6,72 +6,18 @@
     <title>Login - บริษัท ไพโรจน์พัฒนาการบัญชี จำกัด</title>
     <link rel="stylesheet" href="stylemn.css">
     <style>
-        /* สามารถย้ายสไตล์เหล่านี้ไปที่ stylemn.css ได้ */
-        .login-container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 25px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: left;
-        }
-        .login-container h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .login-container label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
+        .login-container { max-width: 400px; margin: 50px auto; padding: 25px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: left; }
+        .login-container h2 { text-align: center; margin-bottom: 20px; color: #333; }
+        .login-container label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
         .login-container input[type="text"],
-        .login-container input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
-        }
-        .login-container button[type="submit"] {
-            width: 100%;
-            padding: 12px;
-            background-color: #5cb85c;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: background-color 0.3s ease;
-        }
-        .login-container button[type="submit"]:hover {
-            background-color: #4cae4c;
-        }
-        .login-container .signup-link { /* เปลี่ยนจาก p เป็น div เพื่อจัดสไตล์ได้ง่ายขึ้น */
-            text-align: center;
-            margin-top: 20px;
-            font-size: 0.9em;
-        }
-        .login-container .signup-link a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .login-container .signup-link a:hover {
-            text-decoration: underline;
-        }
-        .error-message {
-            color: red;
-            background-color: #ffebee;
-            border: 1px solid #ef9a9a;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 0.9em;
-        }
+        .login-container input[type="password"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
+        .login-container button[type="submit"] { width: 100%; padding: 12px; background-color: #5cb85c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1.1em; transition: background-color 0.3s ease; }
+        .login-container button[type="submit"]:hover:not(:disabled) { background-color: #4cae4c; }
+        .login-container button[type="submit"]:disabled { background-color: #999; cursor: not-allowed; }
+        .login-container .signup-link { text-align: center; margin-top: 20px; font-size: 0.9em; }
+        .login-container .signup-link a { color: #007bff; text-decoration: none; }
+        .login-container .signup-link a:hover { text-decoration: underline; }
+        .error-message { color: red; background-color: #ffebee; border: 1px solid #ef9a9a; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; font-size: 0.9em; }
     </style>
 </head>
 <body>
@@ -96,67 +42,7 @@
         </div>
     </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.getElementById('loginForm');
-            const errorMessageElement = document.getElementById('loginErrorMessage');
-
-            loginForm.addEventListener('submit', async function(event) {
-                event.preventDefault();
-                errorMessageElement.style.display = 'none'; // ซ่อน error message เก่า
-                errorMessageElement.textContent = '';
-
-                const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value;
-
-                if (!username || !password) {
-                    errorMessageElement.textContent = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน';
-                    errorMessageElement.style.display = 'block';
-                    return;
-                }
-
-                // --- ส่วนนี้จะต้องเรียก API Login ที่คุณจะสร้างใน server.js ---
-                // Endpoint นี้เป็นตัวอย่าง คุณต้องสร้างมันใน server.js
-                const loginApiUrl = 'http://localhost:3001/api/auth/login';
-
-                try {
-    console.log(`Attempting to login user: ${username} to ${loginApiUrl}`);
-    const response = await fetch(loginApiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    });
-
-    const responseData = await response.json();
-
-    if (!response.ok) {
-        throw new Error(responseData.message || `Login failed with status: ${response.status}`);
-    }
-
-    // ---- เมื่อ Login สำเร็จ ----
-    console.log('Login successful:', responseData);
-
-    // 1. เก็บ Token และข้อมูลผู้ใช้ที่จำเป็นลงใน localStorage
-    localStorage.setItem('authToken', responseData.token); // **สำคัญมาก**
-    localStorage.setItem('userId', responseData.userId);
-    localStorage.setItem('userName', responseData.username);
-
-    // 2. ตั้งค่าสถานะ (เผื่อยังต้องใช้)
-    localStorage.setItem('isLoggedIn', 'true');
-
-    // 3. Redirect ไปหน้า menu
-    alert('เข้าสู่ระบบสำเร็จ!');
-    window.location.href = 'menu.html'; // หรือหน้า dashboard ที่ต้องการ
-
-} catch (error) {
-    console.error('Login error:', error);
-    errorMessageElement.textContent = error.message.includes("Failed to fetch")
-        ? 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบว่า Server ทำงานอยู่'
-        : error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
-    errorMessageElement.style.display = 'block';
-}
-            });
-        });
-    </script>
+    <script src="js/config.js"></script>
+    <script src="js/auth-login.js"></script>
 </body>
 </html>

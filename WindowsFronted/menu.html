@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>บริษัท ไพโรจน์พัฒนาการบัญชี จำกัด - ระบบยื่นภาษี</title>
     <link rel="stylesheet" href="stylemn.css">
+    <style>
+        /* สไตล์สำหรับปุ่มที่ถูกปิดการใช้งาน */
+        .btn.disabled {
+            background-color: #d8d8d8;
+            color: #888;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* สไตล์สำหรับข้อความแจ้งเตือน */
+        #login-warning-message {
+            text-align: center;
+            color: #c7254e;
+            background-color: #f9f2f4;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #login-warning-message a {
+            color: #007bff;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
 
@@ -26,8 +50,7 @@
                     <a href="signup.html" class="auth-link">สมัครสมาชิก</a>
                 </div>
                 <div id="userProfileSection" class="user-profile-section" style="display:none;">
-                    <div class="user-profile">
-                        U </div>
+                    <div class="user-profile">U</div>
                     <a href="#" id="logoutLink" class="auth-link">ออกจากระบบ</a>
                 </div>
             </div>
@@ -41,8 +64,8 @@
             <a href="../f/fromSalesTax.html" class="btn">ภาษีขาย</a>
             <a href="../f/frompnd3.html" class="btn">ภ.ง.ด.3</a>
             <a href="../f/frompnd53.html" class="btn">ภ.ง.ด.53</a>
-            </div>
-    </main>
+        </div>
+        </main>
 
     <footer class="site-footer">
         <div class="container">
@@ -55,6 +78,86 @@
         </div>
     </footer>
 
-    <script src="login.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- ตั้งค่าปีปัจจุบันใน Footer ---
+            const currentYearElement = document.getElementById('currentYear');
+            if (currentYearElement) {
+                currentYearElement.textContent = new Date().getFullYear();
+            }
+
+            // --- ตรวจสอบสถานะการล็อกอินจาก localStorage ---
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const userName = localStorage.getItem('userName');
+            
+            const userAuthSection = document.getElementById('userAuthSection');
+            const userProfileSection = document.getElementById('userProfileSection');
+            const logoutLink = document.getElementById('logoutLink');
+            const actionButtons = document.querySelectorAll('.action-buttons .btn');
+            const mainContent = document.querySelector('.main-content');
+
+            if (isLoggedIn && userName) {
+                // --- กรณี: ล็อกอินแล้ว ---
+                
+                // 1. ซ่อนลิงก์ "เข้าสู่ระบบ / สมัครสมาชิก"
+                if (userAuthSection) userAuthSection.style.display = 'none';
+                
+                // 2. แสดงส่วนโปรไฟล์และปุ่ม "ออกจากระบบ"
+                if (userProfileSection) {
+                    userProfileSection.style.display = 'flex';
+                    const userProfileIcon = userProfileSection.querySelector('.user-profile');
+                    if (userProfileIcon) {
+                        // แสดงตัวอักษรแรกของชื่อผู้ใช้ในไอคอนโปรไฟล์
+                        userProfileIcon.textContent = userName.charAt(0).toUpperCase();
+                    }
+                }
+                
+                // 3. ตั้งค่าการทำงานให้ปุ่ม "ออกจากระบบ"
+                if (logoutLink) {
+                    logoutLink.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        // ล้างข้อมูลการล็อกอินทั้งหมด
+                        localStorage.removeItem('isLoggedIn');
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('userName');
+                        localStorage.removeItem('userId');
+                        
+                        // แจ้งเตือนและกลับไปหน้า Login
+                        alert('ออกจากระบบสำเร็จ');
+                        window.location.href = 'login.html';
+                    });
+                }
+                
+                // 4. ทำให้แน่ใจว่าปุ่มใช้งานได้ (ลบ class 'disabled' ถ้ามี)
+                actionButtons.forEach(button => {
+                    button.classList.remove('disabled');
+                });
+
+            } else {
+                // --- กรณี: ยังไม่ได้ล็อกอิน ---
+
+                // 1. แสดงลิงก์ "เข้าสู่ระบบ / สมัครสมาชิก" (ตามค่าเริ่มต้น)
+                if (userAuthSection) userAuthSection.style.display = 'flex';
+                if (userProfileSection) userProfileSection.style.display = 'none';
+
+                // 2. ปิดการใช้งานปุ่มระบบภาษีทั้งหมด
+                actionButtons.forEach(button => {
+                    button.removeAttribute('href');
+                    button.classList.add('disabled');
+                });
+
+                // 3. เพิ่มข้อความแจ้งเตือนให้ล็อกอิน
+                if (mainContent) {
+                    const existingWarning = document.getElementById('login-warning-message');
+                    if (!existingWarning) {
+                        const warningMessage = document.createElement('div');
+                        warningMessage.id = 'login-warning-message';
+                        warningMessage.innerHTML = '<p>กรุณา <a href="login.html">เข้าสู่ระบบ</a> เพื่อใช้งานระบบยื่นภาษีออนไลน์</p>';
+                        mainContent.appendChild(warningMessage);
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>

@@ -306,6 +306,50 @@
             animation: rotation 1s linear infinite;
         }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* NEW: Print-specific styles */
+        @media print {
+            body {
+                padding: 0;
+                background-color: #fff;
+            }
+            .floating-btn, #taxDataForm, .modal-overlay, .actions-column {
+                display: none !important;
+            }
+            .container {
+                width: 100%;
+                max-width: 100%;
+                padding: 0;
+                box-shadow: none;
+                border-radius: 0;
+                overflow: visible;
+            }
+            .data-table-container {
+                margin-top: 0;
+                overflow: visible;
+                box-shadow: none;
+                border: none;
+            }
+            h1, h2 {
+                text-align: left;
+                margin-bottom: 15px;
+            }
+            .data-table tbody {
+                display: contents;
+                max-height: none;
+                overflow: visible;
+            }
+            .data-table thead, .data-table tbody tr {
+                display: table-row;
+            }
+            .data-table th, .data-table td {
+                border: 1px solid #ccc;
+                font-size: 10pt;
+            }
+            .data-table tr {
+                page-break-inside: avoid;
+            }
+        }
     </style>
 </head>
 <body>
@@ -369,6 +413,7 @@
                 <button type="reset">ล้างข้อมูล</button>
                 <button type="submit">เพิ่มลงตาราง</button>
                 <button type="button" id="exportCsvBtn" class="action-btn export">📄 ส่งออก Excel</button>
+                <button type="button" id="printBtn" class="action-btn">🖨️ พิมพ์รายงาน</button>
             </div>
         </form>
 
@@ -405,16 +450,14 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentSequence = 1;
 
     // --- START: DATE FORMATTING FUNCTIONS ---
-    // NEW: Helper function to format date to DD/MM/YYYY for display
     function formatDateToDMY(isoDate) {
-        if (!isoDate || !isoDate.includes('-')) return isoDate; // Return as is if invalid
+        if (!isoDate || !isoDate.includes('-')) return isoDate; 
         const [year, month, day] = isoDate.split('-');
         return `${day}/${month}/${year}`;
     }
 
-    // NEW: Helper function to format date back to YYYY-MM-DD for input fields
     function formatDMYToISO(dmyDate) {
-        if (!dmyDate || !dmyDate.includes('/')) return dmyDate; // Return as is if invalid
+        if (!dmyDate || !dmyDate.includes('/')) return dmyDate; 
         const [day, month, year] = dmyDate.split('/');
         return `${year}-${month}-${day}`;
     }
@@ -471,7 +514,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function addRowToTable(data) {
         const newRow = dataTableBody.insertRow(editingRow ? editingRow.rowIndex - 1 : -1);
         
-        // MODIFIED: Format the date before displaying it
         newRow.innerHTML = `
             <td>${data.sequence}</td>
             <td>${formatDateToDMY(data.date)}</td>
@@ -502,7 +544,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const cells = row.querySelectorAll('td');
         row.style.backgroundColor = '#fffbe6';
         
-        // MODIFIED: Convert date from DD/MM/YYYY back to YYYY-MM-DD for the input field
         document.getElementById('date').value = formatDMYToISO(cells[1].textContent);
         document.getElementById('documentNumber').value = cells[2].textContent;
         document.getElementById('companyName').value = cells[3].textContent;
@@ -566,7 +607,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const cells = row.querySelectorAll('td');
             data.push({
                 sequence: cells[0].textContent,
-                // MODIFIED: When saving, keep the displayed DD/MM/YYYY format for consistency
                 date: cells[1].textContent, 
                 documentNumber: cells[2].textContent,
                 companyName: cells[3].textContent, taxId: cells[4].textContent, branchType: cells[5].textContent,
@@ -580,8 +620,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function populateTable(data) {
         dataTableBody.innerHTML = '';
         data.forEach(item => {
-            // Data from history might be in DD/MM/YYYY, so we convert it to ISO before adding,
-            // then addRowToTable will convert it back to DD/MM/YYYY for display. This ensures consistency.
             const dateInISO = formatDMYToISO(item.date);
             addRowToTable({
                 ...item,
@@ -610,7 +648,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (editingRow) {
             const cells = editingRow.querySelectorAll('td');
-            // MODIFIED: Format date on edit save
             cells[1].textContent = formatDateToDMY(data.date);
             cells[2].textContent = data.documentNumber;
             cells[3].textContent = data.companyName;
@@ -646,7 +683,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const exportCsvBtn = document.getElementById('exportCsvBtn');
     exportCsvBtn.addEventListener('click', function() {
-        const data = getTableData(); // getTableData already returns dates in DD/MM/YYYY
+        const data = getTableData();
         if (data.length === 0) {
             alert('ไม่มีข้อมูลในตารางให้ส่งออก');
             return;
@@ -667,6 +704,12 @@ document.addEventListener('DOMContentLoaded', function () {
         URL.revokeObjectURL(url);
     });
     
+    // NEW: Print Button functionality
+    const printBtn = document.getElementById('printBtn');
+    printBtn.addEventListener('click', function() {
+        window.print();
+    });
+
     // --- HISTORY SYSTEM ---
     const historyModal = document.getElementById('historyModal');
     const closeHistoryModalBtn = document.getElementById('closeHistoryModalBtn');
@@ -688,7 +731,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function saveCurrentDataToHistory() {
-        const dataToSave = getTableData(); // This now saves dates as DD/MM/YYYY
+        const dataToSave = getTableData();
         if (dataToSave.length === 0) { alert('ยังไม่มีข้อมูลในตารางให้บันทึก (save)'); return; }
         const historyName = prompt('กรุณาตั้งชื่อสำหรับประวัติชุดนี้:', `ข้อมูลวันที่ ${new Date().toLocaleDateString('th-TH')}`);
         if (!historyName) return;
@@ -708,7 +751,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const dataString = localStorage.getItem(selectedKey);
         if (dataString) {
             const data = JSON.parse(dataString);
-            populateTable(data); // populateTable now handles converting date formats
+            populateTable(data);
             const selectedName = historySelector.options[historySelector.selectedIndex].text;
             alert(`โหลดข้อมูลจากประวัติ "${selectedName}" สำเร็จ`);
             historyModal.style.display = 'none';

@@ -1,0 +1,62 @@
+1. ปัญหาฝั่ง Backend (Python และการเชื่อมต่อฐานข้อมูล)
+ปัญหากลุ่มนี้เป็นกลุ่มที่พบบ่อยที่สุดและซับซ้อนที่สุด โดยจะแสดง Error ในหน้าต่าง Terminal ที่รัน python app.py
+
+ปัญหา: ข้อมูลการเชื่อมต่อไม่ถูกต้อง (Authentication Error)
+อาการ: ใน Terminal จะแสดง Error ที่มีข้อความคล้ายกับ:
+Login failed for user 'sa'.
+('28000', "[28000] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Login failed for user '...'")
+วิธีแก้ไข:
+เปิดไฟล์ app.py
+ตรวจสอบค่าของ SERVER_NAME, DATABASE_NAME, USERNAME, และ PASSWORD อีกครั้งให้แน่ใจว่าถูกต้อง 100%
+ตรวจสอบให้แน่ใจว่า User ที่ใช้มีสิทธิ์ในการเข้าถึงฐานข้อมูลนั้นๆ
+ปัญหา: ไม่พบเซิร์ฟเวอร์ หรือ Firewall บล็อก (Connection Error)
+อาการ: ใน Terminal จะแสดง Error ที่มีข้อความคล้ายกับ:
+Named Pipes Provider, error: 40 - Could not open a connection to SQL Server
+TCP/IP Connection to host ... failed.
+วิธีแก้ไข:
+ตรวจสอบ SERVER_NAME: เป็นสาเหตุที่พบบ่อยที่สุด ตรวจสอบว่าไม่มีการพิมพ์ผิด และเป็นชื่อที่ถูกต้องจากโปรแกรม SSMS
+ตรวจสอบ Firewall: Firewall บนเครื่องคอมพิวเตอร์ของคุณ หรือในระบบเครือข่าย อาจจะบล็อกการเชื่อมต่อ Port ของ SQL Server (โดยปกติคือ Port 1433) ให้ลองปิด Firewall ชั่วคราวเพื่อทดสอบ หรือตั้งค่าอนุญาต (Inbound Rule) ให้ Port 1433 ผ่านได้
+ตรวจสอบ SQL Server Configuration: เปิดโปรแกรม "SQL Server Configuration Manager" และตรวจสอบว่าโปรโตคอล "TCP/IP" สำหรับ Instance ของคุณถูกเปิดใช้งาน (Enabled) อยู่
+ปัญหา: ชื่อตารางหรือคอลัมน์ไม่ถูกต้อง (SQL Error)
+อาการ: ใน Terminal จะแสดง Error ที่มีข้อความคล้ายกับ:
+Invalid object name 'dbo.SClient' (ชื่อตารางผิด)
+Invalid column name 'Cname' (ชื่อคอลัมน์ผิด)
+วิธีแก้ไข:
+เปิดไฟล์ app.py
+ตรวจสอบค่าของ TABLE_NAME, COL_CNAME, COL_TAXID, COL_BRANCH_TYPE, COL_BRANCH_NO
+นำชื่อเหล่านี้ไปเทียบกับชื่อจริงในฐานข้อมูลของคุณในโปรแกรม SSMS ต้องสะกดถูกต้องทุกตัวอักษร
+ปัญหา: ไม่ได้ติดตั้ง ODBC Driver
+อาการ: ใน Terminal จะแสดง Error ที่มีข้อความคล้ายกับ:
+Data source name not found and no default driver specified
+Driver not found
+วิธีแก้ไข:
+ดาวน์โหลดและติดตั้ง "Microsoft ODBC Driver for SQL Server" (แนะนำเวอร์ชัน 17) ให้ตรงกับระบบปฏิบัติการของคุณ (Windows/Linux/macOS)
+2. ปัญหาการสื่อสารระหว่าง Frontend และ Backend
+ปัญหากลุ่มนี้จะแสดง Error ในหน้า Console ของเว็บเบราว์เซอร์ (กด F12 เพื่อเปิด)
+
+ปัญหา: CORS (Cross-Origin Resource Sharing) Error
+อาการ: ใน Console ของเบราว์เซอร์ จะมีข้อความสีแดงแจ้งว่า:
+Access to fetch at ... has been blocked by CORS policy...
+วิธีแก้ไข:
+ตรวจสอบให้แน่ใจว่าในไฟล์ app.py มีการเปิดใช้งาน CORS อย่างถูกต้อง ซึ่งโค้ดปัจจุบันมีอยู่แล้ว:
+Python
+
+from flask_cors import CORS
+app = Flask(__name__)
+CORS(app) 
+หากยังพบปัญหา อาจเกิดจาก Proxy หรือการตั้งค่าอื่นๆ ในระบบเครือข่าย
+ปัญหา: URL ของ API ไม่ถูกต้อง (404 Not Found)
+อาการ: ใน Console ของเบราว์เซอร์ จะมีข้อความสีแดงแจ้งว่า:
+GET http://127.0.0.1:5000/api/companies 404 (NOT FOUND)
+วิธีแก้ไข:
+ตรวจสอบให้แน่ใจว่าเซิร์ฟเวอร์ app.py กำลังทำงานอยู่
+ตรวจสอบ URL ในไฟล์ fromInputTax.html ในฟังก์ชัน fetchCompanyData() ว่าตรงกับ @app.route() ในไฟล์ app.py หรือไม่ ซึ่งในโค้ดปัจจุบันถูกต้องอยู่แล้ว (/api/companies)
+3. ปัญหาฝั่ง Frontend (HTML/JavaScript)
+ปัญหากลุ่มนี้มักเกิดจากการแก้ไขโค้ด HTML/JS แล้วเกิดข้อผิดพลาด
+
+ปัญหา: Dropdown ไม่แสดงผล หรือปุ่มไม่ทำงาน (JavaScript Error)
+อาการ: หน้าเว็บโหลดขึ้นมา แต่ฟังก์ชันบางอย่างไม่ทำงาน เช่น กดปุ่มแล้วเงียบ, Dropdown ไม่ยอมแสดงรายการ
+วิธีแก้ไข:
+กดปBุ่ม F12 บนเบราว์เซอร์เพื่อเปิด Developer Tools
+ไปที่แท็บ "Console"
+อ่านข้อความ Error สีแดง ข้อความนั้นจะบอกว่าเกิดปัญหาที่ไฟล์ไหน บรรทัดที่เท่าไหร่ และสาเหตุคืออะไร (เช่น ... is not a function, Cannot read properties of null) ซึ่งจะช่วยให้หาจุดที่ต้องแก้ไขได้ง่ายขึ้น
